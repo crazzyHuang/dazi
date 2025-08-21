@@ -8,8 +8,8 @@ set -e
 
 # 默认环境
 ENVIRONMENT=${1:-development}
-PROJECT_NAME="tongpin-dazi"
-PROJECT_DIR="/opt/${PROJECT_NAME}"
+PROJECT_NAME="dazi"
+PROJECT_DIR="/home/app/${PROJECT_NAME}"
 
 echo "🚀 开始部署 ${PROJECT_NAME} 到 ${ENVIRONMENT} 环境"
 
