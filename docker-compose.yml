@@ -96,53 +96,119 @@ services:
       - /app/node_modules
     command: pnpm run dev
 
-  # 搭子服务 (Post Service) - 待开发
-  # post-service:
-  #   build:
-  #     context: ./post-service
-  #     dockerfile: Dockerfile
-  #   container_name: tongpin-post-service
-  #   environment:
-  #     NODE_ENV: development
-  #     PORT: 3002
-  #     DB_HOST: postgres
-  #     DB_PORT: 5432
-  #     DB_NAME: tongpin_db
-  #     DB_USER: postgres
-  #     DB_PASSWORD: password
-  #     REDIS_URL: redis://redis:6379
-  #     USER_SERVICE_URL: http://user-service:3001
-  #   ports:
-  #     - "3002:3002"
-  #   depends_on:
-  #     - postgres
-  #     - redis
-  #     - user-service
-  #   networks:
-  #     - tongpin-network
-  #   restart: unless-stopped
+  # 搭子服务 (Post Service)
+  post-service:
+    build:
+      context: ./backend
+      dockerfile: post-service/Dockerfile
+    container_name: tongpin-post-service
+    environment:
+      NODE_ENV: development
+      PORT: 3002
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: tongpin_db
+      DB_USER: postgres
+      DB_PASSWORD: password
+      REDIS_URL: redis://redis:6379
+      USER_SERVICE_URL: http://user-service:3001
+    ports:
+      - "3002:3002"
+    depends_on:
+      - postgres
+      - redis
+      - user-service
+    networks:
+      - tongpin-network
+    restart: unless-stopped
+    volumes:
+      - ./backend/post-service/src:/app/post-service/src
+      - /app/node_modules
+    command: pnpm run dev
 
-  # API 网关 (API Gateway) - 待开发
-  # api-gateway:
-  #   build:
-  #     context: ./api-gateway
-  #     dockerfile: Dockerfile
-  #   container_name: tongpin-api-gateway
-  #   environment:
-  #     NODE_ENV: development
-  #     PORT: 3000
-  #     USER_SERVICE_URL: http://user-service:3001
-  #     POST_SERVICE_URL: http://post-service:3002
-  #     CHAT_SERVICE_URL: http://chat-service:3003
-  #   ports:
-  #     - "3000:3000"
-  #   depends_on:
-  #     - user-service
-  #     - post-service
-  #     - chat-service
-  #   networks:
-  #     - tongpin-network
-  #   restart: unless-stopped
+  # 灵魂服务 (Soul Service)
+  soul-service:
+    build:
+      context: ./backend
+      dockerfile: soul-service/Dockerfile
+    container_name: tongpin-soul-service
+    environment:
+      NODE_ENV: development
+      PORT: 3004
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: tongpin_db
+      DB_USER: postgres
+      DB_PASSWORD: password
+      REDIS_URL: redis://redis:6379
+    ports:
+      - "3004:3004"
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - tongpin-network
+    restart: unless-stopped
+    volumes:
+      - ./backend/soul-service/src:/app/soul-service/src
+      - /app/node_modules
+    command: pnpm run dev
+
+  # 推荐服务 (Recommend Service)
+  recommend-service:
+    build:
+      context: ./backend
+      dockerfile: recommend-service/Dockerfile
+    container_name: tongpin-recommend-service
+    environment:
+      NODE_ENV: development
+      PORT: 3005
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: tongpin_db
+      DB_USER: postgres
+      DB_PASSWORD: password
+      REDIS_URL: redis://redis:6379
+    ports:
+      - "3005:3005"
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - tongpin-network
+    restart: unless-stopped
+    volumes:
+      - ./backend/recommend-service/src:/app/recommend-service/src
+      - /app/node_modules
+    command: pnpm run dev
+
+  # API 网关 (API Gateway)
+  api-gateway:
+    build:
+      context: ./backend
+      dockerfile: api-gateway/Dockerfile
+    container_name: tongpin-api-gateway
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      USER_SERVICE_URL: http://user-service:3001
+      POST_SERVICE_URL: http://post-service:3002
+      SOUL_SERVICE_URL: http://soul-service:3004
+      RECOMMEND_SERVICE_URL: http://recommend-service:3005
+    ports:
+      - "3000:3000"
+    depends_on:
+      - user-service
+      - post-service
+      - soul-service
+      - recommend-service
+    networks:
+      - tongpin-network
+    restart: unless-stopped
+    volumes:
+      - ./backend/api-gateway/src:/app/api-gateway/src
+      - /app/node_modules
+    command: pnpm run dev
 
 volumes:
   postgres_data:
