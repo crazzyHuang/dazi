@@ -8,15 +8,17 @@ RUN apk add --no-cache python3 make g++ curl
 
 # 安装pnpm
 RUN npm install -g pnpm
+# 安装 nodemon
+RUN pnpm add -D nodemon
 
 # 复制package文件
 COPY package*.json ./
 
-# 安装依赖（仅生产依赖）
+# 安装依赖（包含开发依赖）
 RUN if [ -f pnpm-lock.yaml ]; then \
-      pnpm install --prod --frozen-lockfile; \
+      pnpm install --frozen-lockfile; \
     else \
-      pnpm install --prod; \
+      pnpm install; \
     fi
 
 # 复制源代码
@@ -41,4 +43,4 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD curl -f http://localhost:3001/health || exit 1
 
 # 启动命令
-CMD ["pnpm", "start"]
+CMD ["pnpm", "dev"]
