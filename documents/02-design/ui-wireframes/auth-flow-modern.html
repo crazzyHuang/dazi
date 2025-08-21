@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>同频搭子 - 用户认证流程</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #FF6B6B;
+            --primary-hover: #FF5252;
+            --secondary-color: #4ECDC4;
+            --background: #FAFAFA;
+            --surface: #FFFFFF;
+            --text-primary: #212121;
+            --text-secondary: #757575;
+            --text-hint: #BDBDBD;
+            --border-color: #E0E0E0;
+            --error-color: #F44336;
+            --success-color: #4CAF50;
+            --border-radius: 12px;
+            --shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--background);
+            color: var(--text-primary);
+            line-height: 1.6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .mobile-frame {
+            width: 375px;
+            height: 812px;
+            background: var(--surface);
+            border-radius: 24px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .page {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            flex-direction: column;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.3s ease-in-out;
+        }
+
+        .page.active {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .page.prev {
+            transform: translateX(-100%);
+        }
+
+        /* Welcome Page */
+        .welcome-page {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .welcome-logo {
+            width: 80px;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 32px;
+            font-size: 32px;
+        }
+
+        .welcome-title {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+
+        .welcome-subtitle {
+            font-size: 16px;
+            opacity: 0.9;
+            margin-bottom: 48px;
+            line-height: 1.5;
+        }
+
+        .welcome-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            width: 100%;
+        }
+
+        /* Auth Pages */
+        .auth-page {
+            padding: 40px 24px;
+        }
+
+        .auth-header {
+            text-align: center;
+            margin-bottom: 48px;
+        }
+
+        .auth-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .auth-subtitle {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 16px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            font-size: 16px;
+            transition: all 0.2s ease;
+            background: var(--surface);
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.1);
+        }
+
+        .form-input.error {
+            border-color: var(--error-color);
+        }
+
+        .error-message {
+            color: var(--error-color);
+            font-size: 12px;
+            margin-top: 4px;
+        }
+
+        .phone-input-group {
+            display: flex;
+            gap: 8px;
+        }
+
+        .country-code {
+            padding: 16px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            background: var(--background);
+            font-size: 16px;
+            min-width: 80px;
+        }
+
+        .verification-group {
+            display: flex;
+            gap: 8px;
+        }
+
+        .verification-group .form-input {
+            flex: 1;
+        }
+
+        .verification-btn {
+            padding: 16px 20px;
+            background: var(--secondary-color);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .verification-btn:hover {
+            background: #45B7B8;
+        }
+
+        .verification-btn:disabled {
+            background: var(--text-hint);
+            cursor: not-allowed;
+        }
+
+        /* Buttons */
+        .btn {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: var(--border-radius);
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-hover);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--primary-color);
+            border: 1px solid var(--primary-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-outline {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-outline:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .btn:disabled {
+            background: var(--text-hint);
+            color: white;
+            cursor: not-allowed;
+        }
+
+        /* Progress Indicator */
+        .progress-indicator {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 32px;
+        }
+
+        .progress-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--border-color);
+            transition: all 0.2s ease;
+        }
+
+        .progress-dot.active {
+            background: var(--primary-color);
+        }
+
+        /* Navigation */
+        .auth-nav {
+            display: flex;
+            justify-content: space-between;
+            margin-top: auto;
+            padding-top: 24px;
+        }
+
+        .nav-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 14px;
+            cursor: pointer;
+            padding: 8px;
+        }
+
+        .nav-btn:hover {
+            color: var(--primary-color);
+        }
+
+        .nav-btn:disabled {
+            color: var(--text-hint);
+            cursor: not-allowed;
+        }
+
+        /* Profile Setup */
+        .avatar-upload {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .avatar-preview {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: var(--background);
+            border: 2px dashed var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 24px;
+            color: var(--text-hint);
+        }
+
+        .avatar-preview:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .avatar-preview img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .upload-text {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        /* Interest Tags */
+        .interest-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 16px;
+        }
+
+        .interest-tag {
+            padding: 8px 16px;
+            background: var(--background);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .interest-tag.selected {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Success Page */
+        .success-page {
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            background: var(--success-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 32px;
+            font-size: 32px;
+            color: white;
+        }
+
+        .success-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .success-message {
+            color: var(--text-secondary);
+            margin-bottom: 48px;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="mobile-frame">
+        <!-- Welcome Page -->
+        <div class="page welcome-page active" id="welcome">
+            <div class="welcome-logo">🌟</div>
+            <h1 class="welcome-title">同频搭子</h1>
+            <p class="welcome-subtitle">找到真正同频的人<br>不只是活动搭子，更是心灵伙伴</p>
+            <div class="welcome-actions">
+                <button class="btn btn-outline" onclick="goToPage('phone')">立即体验</button>
+                <button class="btn btn-secondary" onclick="goToPage('login')">我已有账号</button>
+            </div>
+        </div>
+
+        <!-- Login Page -->
+        <div class="page auth-page" id="login">
+            <div class="progress-indicator">
+                <div class="progress-dot active"></div>
+                <div class="progress-dot"></div>
+                <div class="progress-dot"></div>
+                <div class="progress-dot"></div>
+            </div>
+            
+            <div class="auth-header">
+                <h2 class="auth-title">欢迎回来</h2>
+                <p class="auth-subtitle">登录你的账号</p>
+            </div>
+
+            <form id="loginForm">
+                <div class="form-group">
+                    <label class="form-label">手机号</label>
+                    <div class="phone-input-group">
+                        <select class="country-code">
+                            <option value="+86">+86</option>
+                        </select>
+                        <input type="tel" class="form-input" placeholder="请输入手机号" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">密码</label>
+                    <input type="password" class="form-input" placeholder="请输入密码" required>
+                </div>
+
+                <button type="submit" class="btn btn-primary">登录</button>
+            </form>
+
+            <div class="auth-nav">
+                <button class="nav-btn" onclick="goToPage('welcome')">返回</button>
+                <button class="nav-btn" onclick="goToPage('phone')">注册账号</button>
+            </div>
+        </div>
+
+        <!-- Phone Input Page -->
+        <div class="page auth-page" id="phone">
+            <div class="progress-indicator">
+                <div class="progress-dot active"></div>
+                <div class="progress-dot"></div>
+                <div class="progress-dot"></div>
+                <div class="progress-dot"></div>
+            </div>
+            
+            <div class="auth-header">
+                <h2 class="auth-title">手机号验证</h2>
+                <p class="auth-subtitle">我们将发送验证码到你的手机</p>
+            </div>
+
+            <form id="phoneForm">
+                <div class="form-group">
+                    <label class="form-label">手机号</label>
+                    <div class="phone-input-group">
+                        <select class="country-code">
+                            <option value="+86">+86</option>
+                        </select>
+                        <input type="tel" class="form-input" placeholder="请输入手机号" required id="phoneInput">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary">发送验证码</button>
+            </form>
+
+            <div class="auth-nav">
+                <button class="nav-btn" onclick="goToPage('welcome')">返回</button>
+                <button class="nav-btn" onclick="goToPage('login')">已有账号</button>
+            </div>
+        </div>
+
+        <!-- Verification Page -->
+        <div class="page auth-page" id="verification">
+            <div class="progress-indicator">
+                <div class="progress-dot active"></div>
+                <div class="progress-dot active"></div>
+                <div class="progress-dot"></div>
+                <div class="progress-dot"></div>
+            </div>
+            
+            <div class="auth-header">
+                <h2 class="auth-title">输入验证码</h2>
+                <p class="auth-subtitle">验证码已发送到 <span id="phoneDisplay"></span></p>
+            </div>
+
+            <form id="verificationForm">
+                <div class="form-group">
+                    <label class="form-label">验证码</label>
+                    <div class="verification-group">
+                        <input type="text" class="form-input" placeholder="6位验证码" maxlength="6" required>
+                        <button type="button" class="verification-btn" id="resendBtn">重新发送</button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">设置密码</label>
+                    <input type="password" class="form-input" placeholder="请设置登录密码" required>
+                </div>
+
+                <button type="submit" class="btn btn-primary">下一步</button>
+            </form>
+
+            <div class="auth-nav">
+                <button class="nav-btn" onclick="goToPage('phone')">返回</button>
+                <button class="nav-btn" onclick="goToPage('login')">已有账号</button>
+            </div>
+        </div>
+
+        <!-- Profile Setup Page -->
+        <div class="page auth-page" id="profile">
+            <div class="progress-indicator">
+                <div class="progress-dot active"></div>
+                <div class="progress-dot active"></div>
+                <div class="progress-dot active"></div>
+                <div class="progress-dot"></div>
+            </div>
+            
+            <div class="auth-header">
+                <h2 class="auth-title">完善资料</h2>
+                <p class="auth-subtitle">让大家更好地认识你</p>
+            </div>
+
+            <form id="profileForm">
+                <div class="avatar-upload">
+                    <div class="avatar-preview" onclick="uploadAvatar()">
+                        📷
+                    </div>
+                    <p class="upload-text">上传头像</p>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">昵称</label>
+                    <input type="text" class="form-input" placeholder="给自己起个好听的昵称" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">年龄</label>
+                    <input type="number" class="form-input" placeholder="年龄" min="18" max="99" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">性别</label>
+                    <select class="form-input" required>
+                        <option value="">请选择</option>
+                        <option value="male">男</option>
+                        <option value="female">女</option>
+                        <option value="other">其他</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">所在城市</label>
+                    <input type="text" class="form-input" placeholder="所在城市" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">个人简介</label>
+                    <textarea class="form-input" rows="3" placeholder="简单介绍一下自己..." style="resize: none;"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">兴趣爱好 (选择感兴趣的标签)</label>
+                    <div class="interest-tags">
+                        <span class="interest-tag" onclick="toggleTag(this)">🏃‍♂️ 运动健身</span>
+                        <span class="interest-tag" onclick="toggleTag(this)">🍔 美食探店</span>
+                        <span class="interest-tag" onclick="toggleTag(this)">🎬 电影</span>
+                        <span class="interest-tag" onclick="toggleTag(this)">🎵 音乐</span>
+                        <span class="interest-tag" onclick="toggleTag(this)">📚 读书</span>
+                        <span class="interest-tag" onclick="toggleTag(this)">✈️ 旅行</span>
+                        <span class="interest-tag" onclick="toggleTag(this)">🎨 艺术</span>
+                        <span class="interest-tag" onclick="toggleTag(this)">🎮 游戏</span>
+                        <span class="interest-tag" onclick="toggleTag(this)">📷 摄影</span>
+                        <span class="interest-tag" onclick="toggleTag(this)">🧘‍♀️ 瑜伽</span>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary">完成注册</button>
+            </form>
+
+            <div class="auth-nav">
+                <button class="nav-btn" onclick="goToPage('verification')">返回</button>
+                <button class="nav-btn" onclick="skipProfile()">跳过</button>
+            </div>
+        </div>
+
+        <!-- Success Page -->
+        <div class="page success-page" id="success">
+            <div class="success-icon">✨</div>
+            <h2 class="success-title">欢迎来到同频搭子!</h2>
+            <p class="success-message">你的账号已创建成功<br>开始寻找你的同频伙伴吧</p>
+            <button class="btn btn-primary" onclick="goToApp()">开始探索</button>
+        </div>
+    </div>
+
+    <script>
+        // Page navigation
+        function goToPage(pageId) {
+            // Hide current active page
+            const currentPage = document.querySelector('.page.active');
+            currentPage.classList.remove('active');
+            currentPage.classList.add('prev');
+            
+            // Show target page
+            setTimeout(() => {
+                currentPage.classList.remove('prev');
+                document.getElementById(pageId).classList.add('active');
+            }, 100);
+        }
+
+        // Form handling
+        document.getElementById('phoneForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const phoneInput = document.getElementById('phoneInput');
+            document.getElementById('phoneDisplay').textContent = phoneInput.value;
+            goToPage('verification');
+        });
+
+        document.getElementById('verificationForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            goToPage('profile');
+        });
+
+        document.getElementById('profileForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            goToPage('success');
+        });
+
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            goToApp();
+        });
+
+        // Interest tag selection
+        function toggleTag(tag) {
+            tag.classList.toggle('selected');
+        }
+
+        // Avatar upload simulation
+        function uploadAvatar() {
+            const preview = document.querySelector('.avatar-preview');
+            preview.innerHTML = '<img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&h=80&fit=crop&crop=face" alt="Avatar">';
+        }
+
+        // Skip profile
+        function skipProfile() {
+            goToPage('success');
+        }
+
+        // Go to main app
+        function goToApp() {
+            alert('注册完成！现在会跳转到主应用界面');
+            // 这里可以跳转到主应用页面
+        }
+
+        // Resend verification code
+        let resendTimer = 0;
+        document.getElementById('resendBtn').addEventListener('click', function() {
+            if (resendTimer > 0) return;
+            
+            const btn = this;
+            resendTimer = 60;
+            btn.disabled = true;
+            btn.textContent = `${resendTimer}s后重发`;
+            
+            const timer = setInterval(() => {
+                resendTimer--;
+                btn.textContent = `${resendTimer}s后重发`;
+                
+                if (resendTimer <= 0) {
+                    clearInterval(timer);
+                    btn.disabled = false;
+                    btn.textContent = '重新发送';
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

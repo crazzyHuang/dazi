@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>同频搭子 - 搭子详情与发布</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #FF6B6B;
+            --primary-hover: #FF5252;
+            --secondary-color: #4ECDC4;
+            --background: #FAFAFA;
+            --surface: #FFFFFF;
+            --text-primary: #212121;
+            --text-secondary: #757575;
+            --text-hint: #BDBDBD;
+            --border-color: #E0E0E0;
+            --success-color: #4CAF50;
+            --warning-color: #FF9800;
+            --border-radius: 12px;
+            --shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--background);
+            color: var(--text-primary);
+            line-height: 1.6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .mobile-frame {
+            width: 375px;
+            height: 812px;
+            background: var(--surface);
+            border-radius: 24px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .page {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--background);
+            transform: translateX(100%);
+            transition: transform 0.3s ease-in-out;
+            overflow-y: auto;
+        }
+
+        .page.active {
+            transform: translateX(0);
+        }
+
+        .page.prev {
+            transform: translateX(-100%);
+        }
+
+        /* Header */
+        .header {
+            background: var(--surface);
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+        }
+
+        .back-btn {
+            width: 36px;
+            height: 36px;
+            background: var(--background);
+            border: none;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            margin-right: 16px;
+            font-size: 18px;
+        }
+
+        .header-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .header-btn {
+            width: 36px;
+            height: 36px;
+            background: var(--background);
+            border: none;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        /* Post Detail Page */
+        .post-detail {
+            background: var(--surface);
+        }
+
+        .post-hero {
+            position: relative;
+            height: 250px;
+            overflow: hidden;
+        }
+
+        .post-hero-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .post-hero-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(0,0,0,0.7));
+            padding: 24px 20px;
+            color: white;
+        }
+
+        .post-category-badge {
+            background: var(--secondary-color);
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+            margin-bottom: 8px;
+        }
+
+        .post-hero-title {
+            font-size: 24px;
+            font-weight: 700;
+            line-height: 1.3;
+        }
+
+        .post-content-section {
+            padding: 24px 20px;
+        }
+
+        .post-meta-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            background: var(--background);
+            border-radius: var(--border-radius);
+        }
+
+        .meta-icon {
+            font-size: 20px;
+            margin-right: 12px;
+            color: var(--primary-color);
+        }
+
+        .meta-content {
+            flex: 1;
+        }
+
+        .meta-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 2px;
+        }
+
+        .meta-value {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .post-description {
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 24px;
+        }
+
+        .host-info {
+            display: flex;
+            align-items: center;
+            padding: 16px;
+            background: var(--background);
+            border-radius: var(--border-radius);
+            margin-bottom: 24px;
+        }
+
+        .host-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            margin-right: 16px;
+            object-fit: cover;
+        }
+
+        .host-details {
+            flex: 1;
+        }
+
+        .host-name {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .host-stats {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .message-btn {
+            background: var(--background);
+            border: 1px solid var(--border-color);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .participants-section {
+            margin-bottom: 24px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .participants-list {
+            display: flex;
+            gap: 12px;
+        }
+
+        .participant-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 2px solid var(--primary-color);
+            object-fit: cover;
+        }
+
+        .participant-placeholder {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 2px dashed var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-hint);
+            font-size: 20px;
+        }
+
+        .bottom-actions {
+            position: sticky;
+            bottom: 0;
+            background: var(--surface);
+            padding: 16px 20px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            padding: 16px 24px;
+            border-radius: var(--border-radius);
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+            flex: 1;
+        }
+
+        .btn-secondary {
+            background: var(--background);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            flex: 1;
+        }
+
+        .btn-icon-only {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        /* Create Post Page */
+        .form-section {
+            padding: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 16px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            font-size: 16px;
+            background: var(--surface);
+            transition: all 0.2s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.1);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 100px;
+            font-family: inherit;
+        }
+
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .category-option {
+            padding: 12px 8px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 14px;
+        }
+
+        .category-option.selected {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .image-upload {
+            border: 2px dashed var(--border-color);
+            border-radius: var(--border-radius);
+            padding: 40px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .image-upload:hover {
+            border-color: var(--primary-color);
+            background: rgba(255, 107, 107, 0.05);
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            color: var(--text-hint);
+            margin-bottom: 12px;
+        }
+
+        .upload-text {
+            color: var(--text-secondary);
+        }
+
+        .location-input {
+            position: relative;
+        }
+
+        .location-suggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: var(--surface);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            z-index: 10;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .location-suggestion {
+            padding: 12px 16px;
+            cursor: pointer;
+            border-bottom: 1px solid var(--border-color);
+            transition: all 0.2s ease;
+        }
+
+        .location-suggestion:hover {
+            background: var(--background);
+        }
+
+        .datetime-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .participant-counter {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-top: 8px;
+        }
+
+        .counter-btn {
+            width: 36px;
+            height: 36px;
+            background: var(--background);
+            border: 1px solid var(--border-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .counter-value {
+            font-size: 18px;
+            font-weight: 600;
+            min-width: 40px;
+            text-align: center;
+        }
+
+        .publish-section {
+            padding: 20px;
+            border-top: 1px solid var(--border-color);
+            background: var(--surface);
+        }
+
+        .publish-btn {
+            width: 100%;
+            background: var(--primary-color);
+            color: white;
+            padding: 16px;
+            border: none;
+            border-radius: var(--border-radius);
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .publish-btn:disabled {
+            background: var(--text-hint);
+            cursor: not-allowed;
+        }
+
+        /* Tab Navigation */
+        .tab-nav {
+            display: flex;
+            background: var(--surface);
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 70px;
+            z-index: 9;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 16px;
+            background: none;
+            border: none;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            color: var(--text-secondary);
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s ease;
+        }
+
+        .tab-btn.active {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+        }
+    </style>
+</head>
+<body>
+    <div class="mobile-frame">
+        <!-- Post Detail Page -->
+        <div class="page post-detail active" id="postDetail">
+            <header class="header">
+                <div class="header-left">
+                    <button class="back-btn" onclick="goBack()">←</button>
+                    <span class="header-title">搭子详情</span>
+                </div>
+                <div class="header-actions">
+                    <button class="header-btn" onclick="sharePost()">📤</button>
+                    <button class="header-btn" onclick="favoritePost()">❤️</button>
+                </div>
+            </header>
+
+            <div class="post-hero">
+                <img src="https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=400&h=250&fit=crop" alt="活动图片" class="post-hero-image">
+                <div class="post-hero-overlay">
+                    <span class="post-category-badge">美食</span>
+                    <h1 class="post-hero-title">周末一起探店：三里屯新开的日料店</h1>
+                </div>
+            </div>
+
+            <div class="post-content-section">
+                <div class="post-meta-grid">
+                    <div class="meta-item">
+                        <span class="meta-icon">📍</span>
+                        <div class="meta-content">
+                            <div class="meta-label">地点</div>
+                            <div class="meta-value">三里屯SOHO</div>
+                        </div>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-icon">⏰</span>
+                        <div class="meta-content">
+                            <div class="meta-label">时间</div>
+                            <div class="meta-value">明天 18:30</div>
+                        </div>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-icon">👥</span>
+                        <div class="meta-content">
+                            <div class="meta-label">人数</div>
+                            <div class="meta-value">1/2 人</div>
+                        </div>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-icon">💰</span>
+                        <div class="meta-content">
+                            <div class="meta-label">费用</div>
+                            <div class="meta-value">AA制</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="post-description">
+                    听说这家店的怀石料理特别正宗，想找个懂日料的朋友一起去品鉴。店家说两人同行有优惠哦～
+                    <br><br>
+                    我比较喜欢尝试新的美食，特别是日式料理。希望能找到同样喜欢美食的朋友，一起享受美好的用餐时光。
+                </div>
+
+                <div class="host-info">
+                    <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&h=80&fit=crop&crop=face" alt="发起人头像" class="host-avatar">
+                    <div class="host-details">
+                        <div class="host-name">小雨 · 25岁</div>
+                        <div class="host-stats">已组织 12 次活动 · 4.9分</div>
+                    </div>
+                    <button class="message-btn" onclick="sendMessage()">私信</button>
+                </div>
+
+                <div class="participants-section">
+                    <h3 class="section-title">参与成员</h3>
+                    <div class="participants-list">
+                        <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&h=80&fit=crop&crop=face" alt="参与者" class="participant-avatar">
+                        <div class="participant-placeholder">+</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bottom-actions">
+                <button class="btn btn-secondary" onclick="askQuestion()">提问</button>
+                <button class="btn btn-primary" onclick="applyToJoin()">申请加入</button>
+            </div>
+        </div>
+
+        <!-- Create Post Page -->
+        <div class="page" id="createPost">
+            <header class="header">
+                <div class="header-left">
+                    <button class="back-btn" onclick="goBack()">←</button>
+                    <span class="header-title">发布搭子</span>
+                </div>
+                <div class="header-actions">
+                    <button class="header-btn" onclick="saveDraft()">💾</button>
+                </div>
+            </header>
+
+            <div class="tab-nav">
+                <button class="tab-btn active" onclick="switchTab('basic')">基本信息</button>
+                <button class="tab-btn" onclick="switchTab('details')">详细设置</button>
+            </div>
+
+            <div class="form-section" id="basicTab">
+                <div class="form-group">
+                    <label class="form-label">活动标题 *</label>
+                    <input type="text" class="form-input" placeholder="给你的活动起个吸引人的标题" maxlength="50" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">活动描述</label>
+                    <textarea class="form-input form-textarea" placeholder="详细描述你的活动内容、要求等信息..." maxlength="500"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">活动分类 *</label>
+                    <div class="category-grid">
+                        <div class="category-option" onclick="selectCategory(this)">🏃‍♂️ 运动</div>
+                        <div class="category-option" onclick="selectCategory(this)">🍔 美食</div>
+                        <div class="category-option" onclick="selectCategory(this)">🎨 文化</div>
+                        <div class="category-option" onclick="selectCategory(this)">✈️ 旅行</div>
+                        <div class="category-option" onclick="selectCategory(this)">🎬 娱乐</div>
+                        <div class="category-option" onclick="selectCategory(this)">📚 学习</div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">上传图片</label>
+                    <div class="image-upload" onclick="uploadImages()">
+                        <div class="upload-icon">📷</div>
+                        <div class="upload-text">点击上传活动相关图片</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section" id="detailsTab" style="display: none;">
+                <div class="form-group">
+                    <label class="form-label">活动地点 *</label>
+                    <div class="location-input">
+                        <input type="text" class="form-input" placeholder="输入地点名称或地址" oninput="searchLocation(this.value)">
+                        <div class="location-suggestions" id="locationSuggestions" style="display: none;">
+                            <div class="location-suggestion">三里屯SOHO</div>
+                            <div class="location-suggestion">三里屯太古里</div>
+                            <div class="location-suggestion">三里屯酒吧街</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">活动时间 *</label>
+                    <div class="datetime-group">
+                        <input type="date" class="form-input" required>
+                        <input type="time" class="form-input" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">参与人数限制 *</label>
+                    <div class="participant-counter">
+                        <button type="button" class="counter-btn" onclick="changeParticipants(-1)">-</button>
+                        <span class="counter-value" id="participantCount">2</span>
+                        <button type="button" class="counter-btn" onclick="changeParticipants(1)">+</button>
+                        <span style="margin-left: 12px; color: var(--text-secondary);">人 (包含你)</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">费用说明</label>
+                    <select class="form-input">
+                        <option value="aa">AA制</option>
+                        <option value="host">我请客</option>
+                        <option value="free">免费活动</option>
+                        <option value="other">其他</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">特殊要求</label>
+                    <textarea class="form-input form-textarea" placeholder="对参与者的特殊要求或注意事项..." rows="3"></textarea>
+                </div>
+            </div>
+
+            <div class="publish-section">
+                <button class="publish-btn" onclick="publishPost()">发布搭子邀约</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentParticipants = 2;
+
+        // Navigation
+        function goBack() {
+            window.history.back();
+        }
+
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            document.getElementById(pageId).classList.add('active');
+        }
+
+        // Post Detail Actions
+        function sharePost() {
+            alert('分享搭子');
+        }
+
+        function favoritePost() {
+            event.target.textContent = event.target.textContent === '❤️' ? '💖' : '❤️';
+        }
+
+        function sendMessage() {
+            alert('发送私信给发起人');
+        }
+
+        function askQuestion() {
+            alert('向发起人提问');
+        }
+
+        function applyToJoin() {
+            const btn = event.target;
+            btn.textContent = '申请中...';
+            btn.disabled = true;
+            
+            setTimeout(() => {
+                alert('申请已发送，等待发起人确认');
+                btn.textContent = '已申请';
+                btn.style.background = 'var(--success-color)';
+            }, 1500);
+        }
+
+        // Create Post Functions
+        function switchTab(tabName) {
+            // Update tab buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            // Show corresponding content
+            if (tabName === 'basic') {
+                document.getElementById('basicTab').style.display = 'block';
+                document.getElementById('detailsTab').style.display = 'none';
+            } else {
+                document.getElementById('basicTab').style.display = 'none';
+                document.getElementById('detailsTab').style.display = 'block';
+            }
+        }
+
+        function selectCategory(element) {
+            // Remove active from others
+            document.querySelectorAll('.category-option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            // Add active to clicked
+            element.classList.add('selected');
+        }
+
+        function uploadImages() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+            input.multiple = true;
+            input.onchange = function(e) {
+                console.log('Selected files:', e.target.files);
+                alert(`已选择 ${e.target.files.length} 张图片`);
+            };
+            input.click();
+        }
+
+        function searchLocation(query) {
+            const suggestions = document.getElementById('locationSuggestions');
+            if (query.length > 0) {
+                suggestions.style.display = 'block';
+            } else {
+                suggestions.style.display = 'none';
+            }
+        }
+
+        // Close suggestions when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.location-input')) {
+                document.getElementById('locationSuggestions').style.display = 'none';
+            }
+        });
+
+        // Select location suggestion
+        document.querySelectorAll('.location-suggestion').forEach(suggestion => {
+            suggestion.onclick = function() {
+                const input = document.querySelector('.location-input input');
+                input.value = this.textContent;
+                document.getElementById('locationSuggestions').style.display = 'none';
+            };
+        });
+
+        function changeParticipants(delta) {
+            currentParticipants = Math.max(2, Math.min(10, currentParticipants + delta));
+            document.getElementById('participantCount').textContent = currentParticipants;
+        }
+
+        function saveDraft() {
+            alert('草稿已保存');
+        }
+
+        function publishPost() {
+            // Validate required fields
+            const title = document.querySelector('input[placeholder*="标题"]').value;
+            const category = document.querySelector('.category-option.selected');
+            const location = document.querySelector('.location-input input').value;
+            const date = document.querySelector('input[type="date"]').value;
+            const time = document.querySelector('input[type="time"]').value;
+
+            if (!title) {
+                alert('请填写活动标题');
+                return;
+            }
+            if (!category) {
+                alert('请选择活动分类');
+                return;
+            }
+            if (!location) {
+                alert('请填写活动地点');
+                return;
+            }
+            if (!date || !time) {
+                alert('请选择活动时间');
+                return;
+            }
+
+            // Simulate publishing
+            const btn = event.target;
+            btn.textContent = '发布中...';
+            btn.disabled = true;
+
+            setTimeout(() => {
+                alert('搭子邀约发布成功！');
+                btn.textContent = '发布成功';
+                btn.style.background = 'var(--success-color)';
+                
+                setTimeout(() => {
+                    showPage('postDetail');
+                }, 1000);
+            }, 2000);
+        }
+
+        // Demo: Switch to create post page
+        function createPost() {
+            showPage('createPost');
+        }
+
+        // Add demo button
+        setTimeout(() => {
+            const demoBtn = document.createElement('button');
+            demoBtn.textContent = '查看发布页面';
+            demoBtn.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: var(--secondary-color);
+                color: white;
+                border: none;
+                padding: 8px 16px;
+                border-radius: 20px;
+                cursor: pointer;
+                z-index: 1000;
+            `;
+            demoBtn.onclick = () => showPage('createPost');
+            document.body.appendChild(demoBtn);
+        }, 1000);
+    </script>
+</body>
+</html>

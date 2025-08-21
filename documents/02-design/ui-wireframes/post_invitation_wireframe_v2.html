@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>发布邀约 - V2 对话式</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #FF7A59, #FFB270);
+            --bot-bg: #EAECEE;
+            --user-bg: var(--primary-gradient);
+            --text-color-dark: #2C3E50;
+            --text-color-light: #FFFFFF;
+            --bg-color: #F4F6F8;
+            --card-bg: #FFFFFF;
+        }
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+        }
+        .mobile-frame {
+            width: 375px;
+            height: 812px;
+            background-color: var(--card-bg);
+            border: 1px solid #CCC;
+            border-radius: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .header {
+            display: flex;
+            align-items: center;
+            padding: 15px 20px;
+            background-color: white;
+            flex-shrink: 0;
+            border-bottom: 1px solid #EAEAEA;
+        }
+        .header .back-arrow {
+            font-size: 24px;
+            font-weight: bold;
+            text-decoration: none;
+            color: var(--text-color-dark);
+            margin-right: 15px;
+        }
+        .header .title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-color-dark);
+        }
+        .chat-container {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+        @keyframes slide-in {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .message {
+            max-width: 80%;
+            padding: 12px 18px;
+            border-radius: 20px;
+            margin-bottom: 15px;
+            animation: slide-in 0.5s ease-out forwards;
+            opacity: 0; /* Start hidden for animation */
+        }
+        .message-bot {
+            background-color: var(--bot-bg);
+            color: var(--text-color-dark);
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+        }
+        .message-user {
+            background: var(--user-bg);
+            color: var(--text-color-light);
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+        }
+        .message-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-self: flex-end;
+            justify-content: flex-end;
+            margin-bottom: 15px;
+            animation: slide-in 0.5s ease-out forwards;
+            opacity: 0;
+        }
+        .option-btn {
+            background-color: var(--card-bg);
+            border: 1px solid #D5D8DC;
+            color: #34495E;
+            padding: 8px 15px;
+            border-radius: 18px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        .chat-footer {
+            display: flex;
+            padding: 10px 15px;
+            border-top: 1px solid #EAEAEA;
+            background-color: white;
+        }
+        .chat-input {
+            flex-grow: 1;
+            border: 1px solid #D5D8DC;
+            border-radius: 20px;
+            padding: 10px 15px;
+            font-size: 16px;
+            font-family: 'Noto Sans SC', sans-serif;
+        }
+        .send-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: var(--text-color-dark);
+            margin-left: 10px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="mobile-frame">
+        <header class="header">
+            <a href="#" class="back-arrow">‹</a>
+            <div class="title">创建邀约</div>
+        </header>
+        <main class="chat-container">
+            <!-- Messages will appear here -->
+            <div class="message message-bot" style="animation-delay: 0.5s;">
+                Hi！想发起一个什么样的搭子邀约呢？
+            </div>
+            <div class="message-options" style="animation-delay: 1s;">
+                <button class="option-btn">🏸 运动</button>
+                <button class="option-btn">🍜 吃饭</button>
+                <button class="option-btn">🖼️ 看展</button>
+                <button class="option-btn">➕ 其他</button>
+            </div>
+
+            <!-- This part simulates the user having selected '运动' -->
+            <div class="message message-user" style="animation-delay: 1.5s;">
+                🏸 运动
+            </div>
+            <div class="message message-bot" style="animation-delay: 2s;">
+                运动超棒的！具体是什么运动呢？
+            </div>
+
+            <!-- This part simulates the user having typed '一起打羽毛球' -->
+            <div class="message message-user" style="animation-delay: 2.5s;">
+                一起打羽毛球
+            </div>
+            <div class="message message-bot" style="animation-delay: 3s;">
+                听起来不错！大概在什么时间呢？
+            </div>
+
+        </main>
+        <footer class="chat-footer">
+            <input type="text" class="chat-input" placeholder="输入时间...">
+            <button class="send-btn">▶️</button>
+        </footer>
+    </div>
+</body>
+</html>

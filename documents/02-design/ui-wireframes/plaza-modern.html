@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>同频搭子 - 搭子广场</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #FF6B6B;
+            --primary-hover: #FF5252;
+            --secondary-color: #4ECDC4;
+            --background: #FAFAFA;
+            --surface: #FFFFFF;
+            --text-primary: #212121;
+            --text-secondary: #757575;
+            --text-hint: #BDBDBD;
+            --border-color: #E0E0E0;
+            --success-color: #4CAF50;
+            --warning-color: #FF9800;
+            --border-radius: 12px;
+            --shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--background);
+            color: var(--text-primary);
+            line-height: 1.6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .mobile-frame {
+            width: 375px;
+            height: 812px;
+            background: var(--surface);
+            border-radius: 24px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        .header {
+            background: var(--surface);
+            padding: 16px 20px 12px;
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .location-selector {
+            display: flex;
+            align-items: center;
+            background: var(--background);
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .location-selector:hover {
+            background: #F0F0F0;
+        }
+
+        .location-icon {
+            margin-right: 6px;
+            color: var(--primary-color);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .header-btn {
+            width: 36px;
+            height: 36px;
+            background: var(--background);
+            border: none;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 18px;
+        }
+
+        .header-btn:hover {
+            background: #F0F0F0;
+        }
+
+        .search-bar {
+            display: flex;
+            align-items: center;
+            background: var(--background);
+            border-radius: var(--border-radius);
+            padding: 12px 16px;
+            margin-bottom: 12px;
+        }
+
+        .search-input {
+            flex: 1;
+            border: none;
+            background: none;
+            font-size: 16px;
+            outline: none;
+        }
+
+        .search-input::placeholder {
+            color: var(--text-hint);
+        }
+
+        .search-icon {
+            color: var(--text-hint);
+            margin-right: 12px;
+        }
+
+        /* Category Tabs */
+        .category-tabs {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 4px;
+        }
+
+        .category-tabs::-webkit-scrollbar {
+            display: none;
+        }
+
+        .category-tab {
+            padding: 8px 16px;
+            background: var(--background);
+            border: none;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            color: var(--text-secondary);
+        }
+
+        .category-tab.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .category-tab:hover:not(.active) {
+            background: #F0F0F0;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px 20px 100px;
+        }
+
+        /* Post Cards */
+        .post-card {
+            background: var(--surface);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-card);
+            margin-bottom: 16px;
+            overflow: hidden;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .post-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .post-header {
+            display: flex;
+            align-items: center;
+            padding: 16px 16px 12px;
+        }
+
+        .post-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 12px;
+            object-fit: cover;
+        }
+
+        .post-user-info {
+            flex: 1;
+        }
+
+        .post-username {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .post-time {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .post-category {
+            background: var(--secondary-color);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .post-content {
+            padding: 0 16px 12px;
+        }
+
+        .post-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+
+        .post-description {
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            margin-bottom: 12px;
+        }
+
+        .post-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin: 12px 0;
+        }
+
+        .post-details {
+            padding: 12px 16px;
+            background: var(--background);
+            border-top: 1px solid var(--border-color);
+        }
+
+        .post-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .post-meta-item {
+            display: flex;
+            align-items: center;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .post-meta-icon {
+            margin-right: 4px;
+            font-size: 14px;
+        }
+
+        .post-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .participants-info {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .participants-count {
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .join-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .join-btn:hover {
+            background: var(--primary-hover);
+        }
+
+        .join-btn:disabled {
+            background: var(--text-hint);
+            cursor: not-allowed;
+        }
+
+        .join-btn.full {
+            background: var(--text-hint);
+        }
+
+        /* Floating Action Button */
+        .fab {
+            position: fixed;
+            bottom: 90px;
+            right: calc(50% - 187.5px + 20px);
+            width: 56px;
+            height: 56px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(255, 107, 107, 0.4);
+            transition: all 0.2s ease;
+        }
+
+        .fab:hover {
+            background: var(--primary-hover);
+            transform: scale(1.05);
+        }
+
+        /* Bottom Navigation */
+        .bottom-nav {
+            background: var(--surface);
+            border-top: 1px solid var(--border-color);
+            padding: 12px 0 8px;
+            display: flex;
+            justify-content: space-around;
+            position: sticky;
+            bottom: 0;
+            z-index: 10;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            padding: 4px 12px;
+        }
+
+        .nav-icon {
+            font-size: 22px;
+            margin-bottom: 4px;
+            color: var(--text-hint);
+            transition: all 0.2s ease;
+        }
+
+        .nav-label {
+            font-size: 11px;
+            color: var(--text-hint);
+            font-weight: 500;
+        }
+
+        .nav-item.active .nav-icon {
+            color: var(--primary-color);
+        }
+
+        .nav-item.active .nav-label {
+            color: var(--primary-color);
+        }
+
+        .nav-item:hover:not(.active) .nav-icon,
+        .nav-item:hover:not(.active) .nav-label {
+            color: var(--text-secondary);
+        }
+
+        /* Status indicators */
+        .status-online {
+            color: var(--success-color);
+        }
+
+        .status-hot {
+            color: var(--warning-color);
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .post-card {
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        /* Loading skeleton */
+        .skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+        }
+
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="mobile-frame">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-top">
+                <div class="location-selector" onclick="selectLocation()">
+                    <span class="location-icon">📍</span>
+                    <span>北京·朝阳区</span>
+                    <span style="margin-left: 4px;">⌄</span>
+                </div>
+                
+                <div class="header-actions">
+                    <button class="header-btn" onclick="openFilter()">🔍</button>
+                    <button class="header-btn" onclick="openNotifications()">🔔</button>
+                    <button class="header-btn" onclick="openProfile()">👤</button>
+                </div>
+            </div>
+            
+            <div class="search-bar">
+                <span class="search-icon">🔍</span>
+                <input type="text" class="search-input" placeholder="搜索感兴趣的活动或搭子">
+            </div>
+            
+            <div class="category-tabs">
+                <button class="category-tab active" onclick="filterCategory('all')">全部</button>
+                <button class="category-tab" onclick="filterCategory('sport')">🏃‍♂️ 运动</button>
+                <button class="category-tab" onclick="filterCategory('food')">🍔 美食</button>
+                <button class="category-tab" onclick="filterCategory('culture')">🎨 文化</button>
+                <button class="category-tab" onclick="filterCategory('travel')">✈️ 旅行</button>
+                <button class="category-tab" onclick="filterCategory('entertainment')">🎬 娱乐</button>
+                <button class="category-tab" onclick="filterCategory('study')">📚 学习</button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content" id="postList">
+            <!-- Post Card 1 -->
+            <div class="post-card" onclick="openPostDetail(1)">
+                <div class="post-header">
+                    <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&h=80&fit=crop&crop=face" alt="用户头像" class="post-avatar">
+                    <div class="post-user-info">
+                        <div class="post-username">小雨 <span class="status-online">●</span></div>
+                        <div class="post-time">10分钟前</div>
+                    </div>
+                    <div class="post-category">美食</div>
+                </div>
+                
+                <div class="post-content">
+                    <div class="post-title">周末一起探店：三里屯新开的日料店</div>
+                    <div class="post-description">听说这家店的怀石料理特别正宗，想找个懂日料的朋友一起去品鉴。店家说两人同行有优惠哦～</div>
+                    <img src="https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=400&h=200&fit=crop" alt="美食图片" class="post-image">
+                </div>
+                
+                <div class="post-details">
+                    <div class="post-meta">
+                        <div class="post-meta-item">
+                            <span class="post-meta-icon">📍</span>
+                            <span>三里屯SOHO</span>
+                        </div>
+                        <div class="post-meta-item">
+                            <span class="post-meta-icon">⏰</span>
+                            <span>明天 18:30</span>
+                        </div>
+                        <div class="post-meta-item status-hot">
+                            <span class="post-meta-icon">🔥</span>
+                            <span>热门</span>
+                        </div>
+                    </div>
+                    
+                    <div class="post-actions">
+                        <div class="participants-info">
+                            <span class="participants-count">1/2</span> 人参与
+                        </div>
+                        <button class="join-btn" onclick="event.stopPropagation(); joinPost(1)">申请加入</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Post Card 2 -->
+            <div class="post-card" onclick="openPostDetail(2)">
+                <div class="post-header">
+                    <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&h=80&fit=crop&crop=face" alt="用户头像" class="post-avatar">
+                    <div class="post-user-info">
+                        <div class="post-username">阿杰</div>
+                        <div class="post-time">25分钟前</div>
+                    </div>
+                    <div class="post-category">运动</div>
+                </div>
+                
+                <div class="post-content">
+                    <div class="post-title">晨跑搭子招募 | 奥森公园5公里</div>
+                    <div class="post-description">每周三五日早上7点奥森北门集合，配速5:30左右，适合有一定基础的跑友。一起坚持，一起进步！</div>
+                </div>
+                
+                <div class="post-details">
+                    <div class="post-meta">
+                        <div class="post-meta-item">
+                            <span class="post-meta-icon">📍</span>
+                            <span>奥林匹克森林公园</span>
+                        </div>
+                        <div class="post-meta-item">
+                            <span class="post-meta-icon">⏰</span>
+                            <span>每周三五日 07:00</span>
+                        </div>
+                    </div>
+                    
+                    <div class="post-actions">
+                        <div class="participants-info">
+                            <span class="participants-count">3/5</span> 人参与
+                        </div>
+                        <button class="join-btn" onclick="event.stopPropagation(); joinPost(2)">申请加入</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Post Card 3 -->
+            <div class="post-card" onclick="openPostDetail(3)">
+                <div class="post-header">
+                    <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=80&h=80&fit=crop&crop=face" alt="用户头像" class="post-avatar">
+                    <div class="post-user-info">
+                        <div class="post-username">文艺青年小李</div>
+                        <div class="post-time">1小时前</div>
+                    </div>
+                    <div class="post-category">文化</div>
+                </div>
+                
+                <div class="post-content">
+                    <div class="post-title">中间美术馆新展：AI艺术的边界</div>
+                    <div class="post-description">这次展览很有意思，展示了AI与传统艺术的碰撞。找个同样喜欢当代艺术的朋友一起看展聊艺术～</div>
+                    <img src="https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=400&h=200&fit=crop" alt="艺术展图片" class="post-image">
+                </div>
+                
+                <div class="post-details">
+                    <div class="post-meta">
+                        <div class="post-meta-item">
+                            <span class="post-meta-icon">📍</span>
+                            <span>中间美术馆</span>
+                        </div>
+                        <div class="post-meta-item">
+                            <span class="post-meta-icon">⏰</span>
+                            <span>后天 14:00</span>
+                        </div>
+                    </div>
+                    
+                    <div class="post-actions">
+                        <div class="participants-info">
+                            <span class="participants-count">1/3</span> 人参与
+                        </div>
+                        <button class="join-btn" onclick="event.stopPropagation(); joinPost(3)">申请加入</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Post Card 4 - Full -->
+            <div class="post-card" onclick="openPostDetail(4)">
+                <div class="post-header">
+                    <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=80&h=80&fit=crop&crop=face" alt="用户头像" class="post-avatar">
+                    <div class="post-user-info">
+                        <div class="post-username">户外达人王哥</div>
+                        <div class="post-time">2小时前</div>
+                    </div>
+                    <div class="post-category">旅行</div>
+                </div>
+                
+                <div class="post-content">
+                    <div class="post-title">周末香山看红叶 | 徒步拍照两不误</div>
+                    <div class="post-description">秋季限定！一起去香山赏红叶，带上相机记录最美的秋色。路线轻松，适合所有人参与。</div>
+                    <img src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400&h=200&fit=crop" alt="红叶图片" class="post-image">
+                </div>
+                
+                <div class="post-details">
+                    <div class="post-meta">
+                        <div class="post-meta-item">
+                            <span class="post-meta-icon">📍</span>
+                            <span>香山公园</span>
+                        </div>
+                        <div class="post-meta-item">
+                            <span class="post-meta-icon">⏰</span>
+                            <span>本周六 09:00</span>
+                        </div>
+                    </div>
+                    
+                    <div class="post-actions">
+                        <div class="participants-info">
+                            <span class="participants-count">4/4</span> 人参与
+                        </div>
+                        <button class="join-btn full" disabled>已满员</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Floating Action Button -->
+        <button class="fab" onclick="createPost()">+</button>
+
+        <!-- Bottom Navigation -->
+        <nav class="bottom-nav">
+            <div class="nav-item active">
+                <div class="nav-icon">🏠</div>
+                <div class="nav-label">广场</div>
+            </div>
+            <div class="nav-item" onclick="goToSoul()">
+                <div class="nav-icon">💫</div>
+                <div class="nav-label">灵魂</div>
+            </div>
+            <div class="nav-item" onclick="goToChat()">
+                <div class="nav-icon">💬</div>
+                <div class="nav-label">聊天</div>
+            </div>
+            <div class="nav-item" onclick="goToProfile()">
+                <div class="nav-icon">👤</div>
+                <div class="nav-label">我的</div>
+            </div>
+        </nav>
+    </div>
+
+    <script>
+        // Category filtering
+        function filterCategory(category) {
+            // Update active tab
+            document.querySelectorAll('.category-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Show loading and filter posts
+            showLoadingState();
+            setTimeout(() => {
+                filterPosts(category);
+            }, 500);
+        }
+
+        function filterPosts(category) {
+            const postList = document.getElementById('postList');
+            // In real app, this would fetch filtered data from API
+            console.log('Filtering posts by category:', category);
+            hideLoadingState();
+        }
+
+        function showLoadingState() {
+            // Add skeleton loading animation
+            const posts = document.querySelectorAll('.post-card');
+            posts.forEach(post => {
+                post.style.opacity = '0.5';
+            });
+        }
+
+        function hideLoadingState() {
+            const posts = document.querySelectorAll('.post-card');
+            posts.forEach(post => {
+                post.style.opacity = '1';
+            });
+        }
+
+        // Post actions
+        function openPostDetail(postId) {
+            console.log('Opening post detail:', postId);
+            alert(`查看搭子详情 #${postId}`);
+        }
+
+        function joinPost(postId) {
+            console.log('Joining post:', postId);
+            event.target.textContent = '申请中...';
+            event.target.disabled = true;
+            
+            setTimeout(() => {
+                event.target.textContent = '已申请';
+                event.target.style.background = 'var(--success-color)';
+            }, 1000);
+        }
+
+        function createPost() {
+            console.log('Creating new post');
+            alert('发布新的搭子邀约');
+        }
+
+        // Header actions
+        function selectLocation() {
+            console.log('Selecting location');
+            alert('选择城市/区域');
+        }
+
+        function openFilter() {
+            console.log('Opening filter');
+            alert('筛选条件');
+        }
+
+        function openNotifications() {
+            console.log('Opening notifications');
+            alert('通知中心');
+        }
+
+        function openProfile() {
+            console.log('Opening profile');
+            alert('个人中心');
+        }
+
+        // Navigation
+        function goToSoul() {
+            alert('跳转到灵魂回响页面');
+        }
+
+        function goToChat() {
+            alert('跳转到聊天页面');
+        }
+
+        function goToProfile() {
+            alert('跳转到个人中心');
+        }
+
+        // Search functionality
+        document.querySelector('.search-input').addEventListener('input', function(e) {
+            const query = e.target.value;
+            if (query.length > 2) {
+                console.log('Searching for:', query);
+                // Implement search functionality
+            }
+        });
+
+        // Pull to refresh simulation
+        let startY = 0;
+        let isRefreshing = false;
+
+        document.querySelector('.main-content').addEventListener('touchstart', function(e) {
+            if (this.scrollTop === 0) {
+                startY = e.touches[0].pageY;
+            }
+        });
+
+        document.querySelector('.main-content').addEventListener('touchmove', function(e) {
+            if (this.scrollTop === 0 && !isRefreshing) {
+                const currentY = e.touches[0].pageY;
+                const diff = currentY - startY;
+                
+                if (diff > 50) {
+                    isRefreshing = true;
+                    console.log('Pull to refresh triggered');
+                    
+                    // Show refresh animation
+                    setTimeout(() => {
+                        isRefreshing = false;
+                        console.log('Refresh completed');
+                    }, 1000);
+                }
+            }
+        });
+
+        // Infinite scroll simulation
+        document.querySelector('.main-content').addEventListener('scroll', function() {
+            if (this.scrollTop + this.clientHeight >= this.scrollHeight - 100) {
+                console.log('Load more posts');
+                // Load more posts
+            }
+        });
+    </script>
+</body>
+</html>

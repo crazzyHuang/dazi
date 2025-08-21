@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>灵魂回响 - 原型</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&family=Noto+Sans+SC:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4A90E2;
+            --text-color-dark: #2C3E50;
+            --text-color-medium: #5D6D7E;
+            --text-color-light: #FFFFFF;
+            --bg-color: #F4F6F8;
+            --card-bg: #FFFFFF;
+            --locked-bg: linear-gradient(135deg, #5D6D7E, #2C3E50);
+        }
+        body, html { font-family: 'Noto Sans SC', sans-serif; background-color: var(--bg-color); margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; height: 100%; }
+        .mobile-frame { width: 375px; height: 812px; background-color: var(--bg-color); border: 1px solid #CCC; border-radius: 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); display: flex; flex-direction: column; overflow: hidden; }
+        .header { padding: 15px 20px; background-color: white; flex-shrink: 0; border-bottom: 1px solid #EAEAEA; text-align: center; font-size: 18px; font-weight: 600; }
+        .main-content { flex-grow: 1; overflow-y: auto; padding: 25px 20px; }
+        .section-title { font-size: 20px; font-weight: 700; margin-bottom: 15px; }
+        .soul-card {
+            background: var(--locked-bg);
+            color: var(--text-color-light);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .soul-card.unlocked { background: var(--card-bg); color: var(--text-color-dark); }
+        .soul-card .question { font-family: 'Noto Serif SC', serif; font-size: 18px; margin-bottom: 15px; }
+        .soul-card .status { display: flex; align-items: center; font-size: 14px; opacity: 0.7; }
+        .soul-card .status .icon { font-size: 20px; margin-right: 8px; }
+        .soul-card .answer-preview { display: none; margin-top: 15px; font-size: 14px; line-height: 1.6; border-top: 1px solid #EAEAEA; padding-top: 15px; }
+        .soul-card.unlocked .status { display: none; }
+        .soul-card.unlocked .answer-preview { display: block; }
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); display: flex; justify-content: center; align-items: center; opacity: 0; visibility: hidden; transition: all 0.3s ease; z-index: 10; }
+        .modal-overlay.active { opacity: 1; visibility: visible; }
+        .modal-content { background: var(--card-bg); border-radius: 20px; width: 90%; max-width: 340px; padding: 25px; box-sizing: border-box; transform: scale(0.9); transition: all 0.3s ease; }
+        .modal-overlay.active .modal-content { transform: scale(1); }
+        .modal-question { font-family: 'Noto Serif SC', serif; font-size: 20px; text-align: center; margin-bottom: 15px; }
+        .modal-my-answer { background: var(--bg-color); border-radius: 12px; padding: 15px; font-size: 14px; line-height: 1.6; margin-bottom: 20px; }
+        .unlock-btn { width: 100%; padding: 15px; border: none; border-radius: 12px; background: var(--primary-color); color: white; font-size: 16px; font-weight: 500; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div class="mobile-frame">
+        <header class="header">小明的个人主页</header>
+        <main class="main-content">
+            <!-- Other profile content would go here -->
+            <div class="section-title">与小明的灵魂回响</div>
+            
+            <div class="soul-card" id="card1">
+                <div class="question">“最近哪一首歌，让你单曲循环了很久？”</div>
+                <div class="status"><span class="icon">🔒</span><span>用你的答案解锁TA的回响</span></div>
+                <div class="answer-preview">
+                    <p><b>你的答案：</b>Taylor Swift的《august》。每次听都感觉像回到了一个有遗憾又很怀念的夏天。</p>
+                    <p><b>小明的答案：</b>万能青年旅店的《杀死那个石家庄人》。生活就是这样，没办法。</p>
+                </div>
+            </div>
+
+            <div class="soul-card" id="card2">
+                <div class="question">“如果能回到过去，你会对18岁的自己说什么？”</div>
+                <div class="status"><span class="icon">🔒</span><span>用你的答案解锁TA的回响</span></div>
+                 <div class="answer-preview">...</div>
+            </div>
+        </main>
+    </div>
+
+    <div class="modal-overlay" id="modal">
+        <div class="modal-content">
+            <div class="modal-question">“最近哪一首歌，让你单曲循环了很久？”</div>
+            <p style="text-align:center; font-size: 14px; color: var(--text-color-medium);">你的答案是：</p>
+            <div class="modal-my-answer">Taylor Swift的《august》。每次听都感觉像回到了一个有遗憾又很怀念的夏天。</div>
+            <button class="unlock-btn" id="unlockBtn">用这个答案解锁</button>
+        </div>
+    </div>
+
+    <script>
+        const card1 = document.getElementById('card1');
+        const modal = document.getElementById('modal');
+        const unlockBtn = document.getElementById('unlockBtn');
+
+        card1.addEventListener('click', () => {
+            if (!card1.classList.contains('unlocked')) {
+                modal.classList.add('active');
+            }
+        });
+
+        unlockBtn.addEventListener('click', () => {
+            modal.classList.remove('active');
+            card1.classList.add('unlocked');
+        });
+
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) { // Close if clicking on overlay
+                modal.classList.remove('active');
+            }
+        });
+    </script>
+</body>
+</html>
