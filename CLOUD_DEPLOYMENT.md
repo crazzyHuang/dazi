@@ -68,14 +68,11 @@ sudo ./deploy.sh --deploy prod     # 生产环境
 git clone https://github.com/crazzyHuang/dazi.git
 cd dazi
 
-# 进入后端目录
-cd backend
-
 # 安装依赖
-pnpm install
+cd backend && pnpm install && cd ..
 
 # 配置环境变量
-cp user-service/.env.example user-service/.env
+cp backend/user-service/.env.example backend/user-service/.env
 
 # 启动数据库服务
 docker-compose up -d postgres redis mongodb elasticsearch
@@ -83,8 +80,8 @@ docker-compose up -d postgres redis mongodb elasticsearch
 # 等待数据库启动
 sleep 15
 
-# 启动用户服务
-docker-compose up -d user-service
+# 启动用户服务（带构建）
+docker-compose up -d --build user-service
 ```
 
 ## 🔧 环境配置
@@ -92,7 +89,7 @@ docker-compose up -d user-service
 ### 开发环境配置
 ```bash
 # 编辑环境配置文件
-sudo nano user-service/.env
+sudo nano backend/user-service/.env
 
 # 基本配置
 NODE_ENV=development
@@ -153,8 +150,6 @@ sudo ./deploy.sh --clean
 
 ### 手动管理
 ```bash
-cd backend
-
 # 启动所有服务
 docker-compose up -d
 
@@ -163,6 +158,9 @@ docker-compose down
 
 # 重启特定服务
 docker-compose restart user-service
+
+# 重建并重启用户服务（推荐）
+docker-compose up -d --build user-service
 
 # 查看状态
 docker-compose ps
@@ -173,8 +171,8 @@ docker-compose logs -f user-service
 
 # 更新代码后重启
 git pull origin main
-pnpm install
-docker-compose restart user-service
+cd backend && pnpm install && cd ..
+docker-compose up -d --build user-service
 ```
 
 ## 🔍 监控和日志
@@ -384,10 +382,10 @@ docker-compose restart postgres
 docker-compose logs user-service
 
 # 检查环境配置
-cat user-service/.env
+cat backend/user-service/.env
 
 # 验证依赖安装
-cd user-service && pnpm list --depth=0
+cd backend/user-service && pnpm list --depth=0
 ```
 
 ## 🔄 备份和恢复
@@ -421,11 +419,11 @@ DATE=$(date +%Y%m%d_%H%M%S)
 mkdir -p $BACKUP_DIR
 
 # 备份数据库
-cd /home/app/dazi/backend
+cd /home/app/dazi
 docker-compose exec postgres pg_dump -U postgres tongpin_db > $BACKUP_DIR/db_backup_$DATE.sql
 
 # 备份配置
-cp user-service/.env $BACKUP_DIR/env_backup_$DATE
+cp backend/user-service/.env $BACKUP_DIR/env_backup_$DATE
 
 # 保留最近7天的备份
 find $BACKUP_DIR -name "*.sql" -mtime +7 -delete

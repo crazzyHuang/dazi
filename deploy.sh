@@ -1,42 +1,236 @@
 #!/bin/bash
 
-# 同频搭子项目云服务器一键部署和运维脚本
-# 用法:
-#   ./deploy.sh                    # 交互式部署
-#   ./deploy.sh --deploy dev       # 部署开发环境
-#   ./deploy.sh --deploy staging   # 部署测试环境
-#   ./deploy.sh --deploy prod      # 部署生产环境
-#   ./deploy.sh --update           # 只更新代码和重启服务
-#   ./deploy.sh --start            # 启动所有服务
-#   ./deploy.sh --stop             # 停止所有服务
-#   ./deploy.sh --restart          # 重启所有服务
-#   ./deploy.sh --status           # 查看服务状态
-#   ./deploy.sh --logs             # 查看实时日志
-#   ./deploy.sh --clean            # 清理未使用的Docker资源
+# ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+# ┃                      🎯 同频搭子项目部署和运维工具                  ┃
+# ┃                                                                   ┃
+# ┃  一键部署 | 服务管理 | 环境配置 | 日志监控 | 资源清理               ┃
+# ┃                                                                   ┃
+# ┃  作者: AI Assistant  |  版本: 2.0.0  |  更新: 2024-01-XX           ┃
+# ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
 set -e
 
-echo "🎯 同频搭子项目部署和运维工具"
-echo "================================="
+# 颜色定义
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+MAGENTA='\033[0;35m'
+CYAN='\033[0;36m'
+WHITE='\033[1;37m'
+NC='\033[0m' # No Color
+
+# 图标定义
+ICON_ROCKET="🚀"
+ICON_GEAR="⚙️"
+ICON_CHECK="✅"
+ICON_ERROR="❌"
+ICON_INFO="ℹ️"
+ICON_WARN="⚠️"
+ICON_STAR="⭐"
+ICON_HEART="💖"
+ICON_SPARK="✨"
+
+# 工具函数
+print_header() {
+    echo -e "\n${BLUE}┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓${NC}"
+    echo -e "${BLUE}┃${NC} ${ICON_STAR} $1${NC}"
+    echo -e "${BLUE}┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛${NC}\n"
+}
+
+print_section() {
+    echo -e "\n${CYAN}┌─ $1${NC}"
+    echo -e "${CYAN}└──────────────────────────────────────────────────────────────────┘${NC}"
+}
+
+print_success() {
+    echo -e "${GREEN}${ICON_CHECK} $1${NC}"
+}
+
+print_error() {
+    echo -e "${RED}${ICON_ERROR} $1${NC}"
+}
+
+print_info() {
+    echo -e "${BLUE}${ICON_INFO} $1${NC}"
+}
+
+print_warn() {
+    echo -e "${YELLOW}${ICON_WARN} $1${NC}"
+}
+
+# 显示主菜单
+show_main_menu() {
+    clear
+    echo -e "${MAGENTA}"
+    echo "┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓"
+    echo "┃                      🎯 同频搭子项目部署和运维工具                  ┃"
+    echo "┃                                                                   ┃"
+    echo "┃  一键部署 | 服务管理 | 环境配置 | 日志监控 | 资源清理               ┃"
+    echo "┃                                                                   ┃"
+    echo "┃  作者: AI Assistant  |  版本: 2.0.0  |  更新: 2024-01-XX           ┃"
+    echo "┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛"
+    echo -e "${NC}"
+
+    echo -e "${WHITE}╔═══════════════════════════════════════════════════════════════════╗${NC}"
+    echo -e "${WHITE}║${NC} ${ICON_SPARK} 请选择操作类型:${NC}                                            ${WHITE}║${NC}"
+    echo -e "${WHITE}╠═══════════════════════════════════════════════════════════════════╣${NC}"
+    echo -e "${WHITE}║${NC}                                                                   ${WHITE}║${NC}"
+    echo -e "${WHITE}║${NC}  ${ICON_ROCKET} [1] 部署管理                                              ${WHITE}║${NC}"
+    echo -e "${WHITE}║${NC}      └─ 全新部署、环境配置、系统初始化                     ${WHITE}║${NC}"
+    echo -e "${WHITE}║${NC}                                                                   ${WHITE}║${NC}"
+    echo -e "${WHITE}║${NC}  ${ICON_GEAR} [2] 服务管理                                              ${WHITE}║${NC}"
+    echo -e "${WHITE}║${NC}      └─ 启动、停止、重启、状态查看、日志监控               ${WHITE}║${NC}"
+    echo -e "${WHITE}║${NC}                                                                   ${WHITE}║${NC}"
+    echo -e "${WHITE}║${NC}  ${ICON_HEART} [3] 快速更新                                              ${WHITE}║${NC}"
+    echo -e "${WHITE}║${NC}      └─ 只更新代码和重启服务                                 ${WHITE}║${NC}"
+    echo -e "${WHITE}║${NC}                                                                   ${WHITE}║${NC}"
+    echo -e "${WHITE}║${NC}  ${ICON_INFO} [4] 系统信息                                              ${WHITE}║${NC}"
+    echo -e "${WHITE}║${NC}      └─ 服务状态、系统资源、环境信息                       ${WHITE}║${NC}"
+    echo -e "${WHITE}║${NC}                                                                   ${WHITE}║${NC}"
+    echo -e "${WHITE}║${NC}  ${ICON_ERROR} [5] 退出系统                                              ${WHITE}║${NC}"
+    echo -e "${WHITE}║${NC}                                                                   ${WHITE}║${NC}"
+    echo -e "${WHITE}╚═══════════════════════════════════════════════════════════════════╝${NC}"
+    echo
+}
+
+# 显示部署菜单
+show_deploy_menu() {
+    clear
+    echo -e "${GREEN}"
+    echo "┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓"
+    echo "┃                          🚀 部署管理菜单                          ┃"
+    echo "┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛"
+    echo -e "${NC}"
+
+    echo -e "${WHITE}╔═══════════════════════════════════════════════════════════════════╗${NC}"
+    echo -e "${WHITE}║${NC} ${ICON_ROCKET} 选择部署环境:${NC}                                           ${WHITE}║${NC}"
+    echo -e "${WHITE}╠═══════════════════════════════════════════════════════════════════╣${NC}"
+    echo -e "${WHITE}║${NC}                                                                   ${WHITE}║${NC}"
+    echo -e "${WHITE}║${NC}  ${ICON_SPARK} [1] 开发环境 (Development)                            ${WHITE}║${NC}"
+    echo -e "${WHITE}║${NC}      └─ 端口: 3001 | 数据库: tongpin_db_dev                ${WHITE}║${NC}"
+    echo -e "${WHITE}║${NC}                                                                   ${WHITE}║${NC}"
+    echo -e "${WHITE}║${NC}  ${ICON_GEAR} [2] 测试环境 (Staging)                               ${WHITE}║${NC}"
+    echo -e "${WHITE}║${NC}      └─ 端口: 3002 | 数据库: tongpin_db_staging             ${WHITE}║${NC}"
+    echo -e "${WHITE}║${NC}                                                                   ${WHITE}║${NC}"
+    echo -e "${WHITE}║${NC}  ${ICON_HEART} [3] 生产环境 (Production)                           ${WHITE}║${NC}"
+    echo -e "${WHITE}║${NC}      └─ 端口: 3000 | 数据库: tongpin_db_prod               ${WHITE}║${NC}"
+    echo -e "${WHITE}║${NC}                                                                   ${WHITE}║${NC}"
+    echo -e "${WHITE}║${NC}  ${ICON_INFO} [4] 返回主菜单                                          ${WHITE}║${NC}"
+    echo -e "${WHITE}║${NC}                                                                   ${WHITE}║${NC}"
+    echo -e "${WHITE}╚═══════════════════════════════════════════════════════════════════╝${NC}"
+    echo
+}
+
+# 显示服务管理菜单
+show_service_menu() {
+    clear
+    echo -e "${YELLOW}"
+    echo "┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓"
+    echo "┃                          ⚙️ 服务管理菜单                          ┃"
+    echo "┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛"
+    echo -e "${NC}"
+
+    echo -e "${WHITE}╔═══════════════════════════════════════════════════════════════════╗${NC}"
+    echo -e "${WHITE}║${NC} ${ICON_GEAR} 选择服务操作:${NC}                                          ${WHITE}║${NC}"
+    echo -e "${WHITE}╠═══════════════════════════════════════════════════════════════════╣${NC}"
+    echo -e "${WHITE}║${NC}                                                                   ${WHITE}║${NC}"
+    echo -e "${WHITE}║${NC}  ${ICON_ROCKET} [1] 启动所有服务                                        ${WHITE}║${NC}"
+    echo -e "${WHITE}║${NC}      └─ 启动数据库 + 用户服务                               ${WHITE}║${NC}"
+    echo -e "${WHITE}║${NC}                                                                   ${WHITE}║${NC}"
+    echo -e "${WHITE}║${NC}  ${ICON_ERROR} [2] 停止所有服务                                        ${WHITE}║${NC}"
+    echo -e "${WHITE}║${NC}      └─ 停止所有容器服务                                   ${WHITE}║${NC}"
+    echo -e "${WHITE}║${NC}                                                                   ${WHITE}║${NC}"
+    echo -e "${WHITE}║${NC}  ${ICON_SPARK} [3] 重启所有服务                                        ${WHITE}║${NC}"
+    echo -e "${WHITE}║${NC}      └─ 重启数据库 + 重建用户服务                            ${WHITE}║${NC}"
+    echo -e "${WHITE}║${NC}                                                                   ${WHITE}║${NC}"
+    echo -e "${WHITE}║${NC}  ${ICON_INFO} [4] 查看服务状态                                        ${WHITE}║${NC}"
+    echo -e "${WHITE}║${NC}      └─ 显示所有服务运行状态                               ${WHITE}║${NC}"
+    echo -e "${WHITE}║${NC}                                                                   ${WHITE}║${NC}"
+    echo -e "${WHITE}║${NC}  ${ICON_HEART} [5] 查看实时日志                                        ${WHITE}║${NC}"
+    echo -e "${WHITE}║${NC}      └─ 实时监控服务日志                                   ${WHITE}║${NC}"
+    echo -e "${WHITE}║${NC}                                                                   ${WHITE}║${NC}"
+    echo -e "${WHITE}║${NC}  ${ICON_WARN} [6] 清理Docker资源                                     ${WHITE}║${NC}"
+    echo -e "${WHITE}║${NC}      └─ 清理未使用的镜像、容器、卷                          ${WHITE}║${NC}"
+    echo -e "${WHITE}║${NC}                                                                   ${WHITE}║${NC}"
+    echo -e "${WHITE}║${NC}  ${ICON_INFO} [7] 返回主菜单                                          ${WHITE}║${NC}"
+    echo -e "${WHITE}║${NC}                                                                   ${WHITE}║${NC}"
+    echo -e "${WHITE}╚═══════════════════════════════════════════════════════════════════╝${NC}"
+    echo
+}
+
+print_header "🎯 同频搭子项目部署和运维工具"
 
 # 检查是否为root用户
 if [[ $EUID -ne 0 ]]; then
-   echo "❌ 此脚本需要root权限运行"
-   echo "💡 请使用: sudo ./deploy.sh"
+   print_error "此脚本需要root权限运行"
+   print_info "请使用: sudo ./deploy.sh"
    exit 1
 fi
 
 # 解析命令行参数
 if [[ $# -eq 0 ]]; then
-    # 交互式选择部署模式
-    echo "请选择部署模式："
-    echo "1) 开发环境 (development) - 适合开发调试"
-    echo "2) 测试环境 (staging) - 适合功能测试"
-    echo "3) 生产环境 (production) - 适合线上部署"
-    echo "4) 跳过安装，只更新代码和重启服务"
-    echo ""
+    # 交互式菜单系统
+    while true; do
+        show_main_menu
+        read -p "请选择操作 (1-5): " MAIN_CHOICE
 
-    read -p "请输入选择 (1-4): " MODE_CHOICE
+        case $MAIN_CHOICE in
+            1)
+                while true; do
+                    show_deploy_menu
+                    read -p "请选择部署环境 (1-4): " DEPLOY_CHOICE
+                    case $DEPLOY_CHOICE in
+                        1) MODE_CHOICE=1; break 2 ;;
+                        2) MODE_CHOICE=2; break 2 ;;
+                        3) MODE_CHOICE=3; break 2 ;;
+                        4) break ;;
+                        *) print_error "无效选择，请重新输入" && sleep 2 ;;
+                    esac
+                done
+                ;;
+            2)
+                while true; do
+                    show_service_menu
+                    read -p "请选择服务操作 (1-7): " SERVICE_CHOICE
+                    case $SERVICE_CHOICE in
+                        1) MODE_CHOICE=5; break 2 ;;
+                        2) MODE_CHOICE=6; break 2 ;;
+                        3) MODE_CHOICE=7; break 2 ;;
+                        4) MODE_CHOICE=8; break 2 ;;
+                        5) MODE_CHOICE=9; break 2 ;;
+                        6) MODE_CHOICE=10; break 2 ;;
+                        7) break ;;
+                        *) print_error "无效选择，请重新输入" && sleep 2 ;;
+                    esac
+                done
+                ;;
+            3)
+                MODE_CHOICE=4
+                break
+                ;;
+            4)
+                print_header "📊 系统信息"
+                echo -e "${CYAN}服务状态:${NC}"
+                docker-compose ps 2>/dev/null || print_warn "Docker Compose 未运行"
+                echo
+                echo -e "${CYAN}系统资源:${NC}"
+                echo "CPU: $(uptime | awk '{print $NF}')"
+                echo "内存: $(free -h | awk 'NR==2{printf "%.1fG/%.1fG (%.0f%%)", $3/1024, $2/1024, $3*100/$2}')"
+                echo "磁盘: $(df -h / | awk 'NR==2{print $3"/"$2" ("$5")"}')"
+                echo
+                read -p "按回车键继续..."
+                ;;
+            5)
+                print_success "感谢使用，再见！👋"
+                exit 0
+                ;;
+            *)
+                print_error "无效选择，请重新输入"
+                sleep 2
+                ;;
+        esac
+    done
 else
     case $1 in
         --deploy)
@@ -79,31 +273,45 @@ else
             MODE_CHOICE=10
             ;;
         --help|-h)
-            echo "同频搭子项目部署和运维工具"
-            echo "================================="
-            echo ""
-            echo "部署命令:"
-            echo "  $0                    # 交互式部署"
-            echo "  $0 --deploy dev       # 部署开发环境"
-            echo "  $0 --deploy staging   # 部署测试环境"
-            echo "  $0 --deploy prod      # 部署生产环境"
-            echo "  $0 --update           # 只更新代码和重启服务"
-            echo ""
-            echo "运维命令:"
-            echo "  $0 --start            # 启动所有服务"
-            echo "  $0 --stop             # 停止所有服务"
-            echo "  $0 --restart          # 重启所有服务"
-            echo "  $0 --status           # 查看服务状态"
-            echo "  $0 --logs             # 查看实时日志"
-            echo "  $0 --clean            # 清理Docker资源"
-            echo ""
-            echo "其他命令:"
-            echo "  $0 --help             # 显示此帮助信息"
-            echo ""
-            echo "示例:"
-            echo "  sudo ./deploy.sh --deploy dev    # 部署开发环境"
-            echo "  sudo ./deploy.sh --start         # 启动服务"
-            echo "  sudo ./deploy.sh --logs          # 查看日志"
+            echo -e "${MAGENTA}"
+            echo "┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓"
+            echo "┃                      🎯 同频搭子项目部署和运维工具                  ┃"
+            echo "┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛"
+            echo -e "${NC}"
+
+            echo -e "${WHITE}╔═══════════════════════════════════════════════════════════════════╗${NC}"
+            echo -e "${WHITE}║${NC} ${ICON_ROCKET} 部署命令:${NC}                                                ${WHITE}║${NC}"
+            echo -e "${WHITE}╠═══════════════════════════════════════════════════════════════════╣${NC}"
+            echo -e "${WHITE}║${NC}  $0                    ${ICON_SPARK} 交互式部署菜单                       ${WHITE}║${NC}"
+            echo -e "${WHITE}║${NC}  $0 --deploy dev       ${ICON_GEAR} 部署开发环境                         ${WHITE}║${NC}"
+            echo -e "${WHITE}║${NC}  $0 --deploy staging   ${ICON_GEAR} 部署测试环境                         ${WHITE}║${NC}"
+            echo -e "${WHITE}║${NC}  $0 --deploy prod      ${ICON_GEAR} 部署生产环境                         ${WHITE}║${NC}"
+            echo -e "${WHITE}║${NC}  $0 --update           ${ICON_HEART} 只更新代码和重启服务                  ${WHITE}║${NC}"
+            echo -e "${WHITE}║${NC}                                                                   ${WHITE}║${NC}"
+            echo -e "${WHITE}║${NC} ${ICON_GEAR} 运维命令:${NC}                                                ${WHITE}║${NC}"
+            echo -e "${WHITE}║${NC}  $0 --start            ${ICON_ROCKET} 启动所有服务                        ${WHITE}║${NC}"
+            echo -e "${WHITE}║${NC}  $0 --stop             ${ICON_ERROR} 停止所有服务                         ${WHITE}║${NC}"
+            echo -e "${WHITE}║${NC}  $0 --restart          ${ICON_SPARK} 重启所有服务                        ${WHITE}║${NC}"
+            echo -e "${WHITE}║${NC}  $0 --status           ${ICON_INFO} 查看服务状态                         ${WHITE}║${NC}"
+            echo -e "${WHITE}║${NC}  $0 --logs             ${ICON_HEART} 查看实时日志                         ${WHITE}║${NC}"
+            echo -e "${WHITE}║${NC}  $0 --clean            ${ICON_WARN} 清理Docker资源                       ${WHITE}║${NC}"
+            echo -e "${WHITE}║${NC}                                                                   ${WHITE}║${NC}"
+            echo -e "${WHITE}║${NC} ${ICON_INFO} 其他命令:${NC}                                                ${WHITE}║${NC}"
+            echo -e "${WHITE}║${NC}  $0 --help             ${ICON_INFO} 显示此帮助信息                       ${WHITE}║${NC}"
+            echo -e "${WHITE}║${NC}                                                                   ${WHITE}║${NC}"
+            echo -e "${WHITE}╚═══════════════════════════════════════════════════════════════════╝${NC}"
+            echo
+            echo -e "${CYAN}📚 使用示例:${NC}"
+            echo -e "  ${GREEN}sudo ./deploy.sh${NC}              # 进入交互式菜单"
+            echo -e "  ${GREEN}sudo ./deploy.sh --deploy dev${NC}   # 部署开发环境"
+            echo -e "  ${GREEN}sudo ./deploy.sh --start${NC}        # 启动所有服务"
+            echo -e "  ${GREEN}sudo ./deploy.sh --logs${NC}         # 查看实时日志"
+            echo
+            echo -e "${YELLOW}💡 提示:${NC}"
+            echo -e "  • 首次运行需要完整的部署流程"
+            echo -e "  • 开发时建议使用 --update 快速更新"
+            echo -e "  • 生产环境会自动配置系统服务"
+            echo
             exit 0
             ;;
         *)
@@ -203,7 +411,7 @@ check_docker_compose() {
 
 # 服务管理函数
 manage_services() {
-    cd ${PROJECT_DIR}/backend
+    cd ${PROJECT_DIR}
 
     case $OPERATION in
         "start")
@@ -285,58 +493,67 @@ if [[ -n "$OPERATION" ]]; then
     exit 0
 fi
 
-echo "🚀 开始部署到 ${ENVIRONMENT} 环境"
-echo "📁 项目目录: ${PROJECT_DIR}"
+print_header "🚀 开始部署到 ${ENVIRONMENT} 环境"
+print_info "项目目录: ${PROJECT_DIR}"
 
 # 如果是跳过安装模式，直接进入更新流程
 if [[ "${ENVIRONMENT}" == "update" ]]; then
-    echo "🔄 更新模式：只更新代码和重启服务"
+    print_header "🔄 更新模式：只更新代码和重启服务"
+    print_info "项目目录: ${PROJECT_DIR}"
+
     cd ${PROJECT_DIR}
 
     # 更新代码
-    echo "📥 更新项目代码..."
+    print_section "📥 更新项目代码"
     git pull origin main
     git checkout main
+    print_success "代码更新完成"
 
     # 进入后端目录
     cd backend
 
     # 重新安装依赖
-    echo "📦 更新项目依赖..."
+    print_section "📦 更新项目依赖"
     if [[ -f "pnpm-lock.yaml" ]]; then
         pnpm install --frozen-lockfile
     else
         pnpm install
     fi
+    print_success "依赖更新完成"
+
+    # 返回项目根目录
+    cd ..
 
     # 重启所有服务
-    echo "🔄 重启所有服务..."
+    print_section "🔄 重启所有服务"
     docker-compose down
     docker-compose up -d postgres redis mongodb elasticsearch
     sleep 10
-    docker-compose up -d user-service
+    docker-compose up -d --build user-service
 
-    echo "✅ 更新完成！"
-    echo ""
-    echo "🔍 服务状态："
-    echo "   docker-compose ps"
-    echo ""
-    echo "📝 查看日志："
-    echo "   docker-compose logs -f"
+    print_success "✅ 更新完成！"
+    echo
+    echo -e "${CYAN}🔍 服务状态：${NC}"
+    echo -e "   ${GREEN}docker-compose ps${NC}"
+    echo
+    echo -e "${CYAN}📝 查看日志：${NC}"
+    echo -e "   ${GREEN}docker-compose logs -f${NC}"
 
     exit 0
 fi
 
 # 完整部署流程
-echo "📦 开始完整部署流程..."
+print_header "📦 开始完整部署流程"
 
 # 更新系统包
-echo "📦 更新系统包..."
+print_section "📦 更新系统包"
 apt update && apt upgrade -y
+print_success "系统包更新完成"
 
 # 安装基础依赖
-echo "🔧 安装系统依赖..."
+print_section "🔧 安装系统依赖"
 apt install -y curl wget git htop vim nano
+print_success "系统依赖安装完成"
 
 # 安装 Node.js 18+
 echo "🐢 安装 Node.js 18+..."
@@ -443,6 +660,9 @@ sed -i "s/DB_NAME=.*/DB_NAME=${DB_NAME}/" user-service/.env
 # 创建日志目录
 mkdir -p user-service/logs
 
+# 进入项目根目录
+cd ${PROJECT_DIR}
+
 # 启动数据库服务
 echo "🗄️  启动数据库服务..."
 docker-compose up -d postgres redis mongodb elasticsearch
@@ -528,7 +748,9 @@ echo ""
 echo "🛠️  管理命令："
 echo "   查看状态: docker-compose ps"
 echo "   查看日志: docker-compose logs -f"
+echo "   查看用户服务日志: docker-compose logs -f user-service"
 echo "   重启服务: docker-compose restart user-service"
+echo "   重建并重启: docker-compose up -d --build user-service"
 echo "   停止服务: docker-compose down"
 echo ""
 

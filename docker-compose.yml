@@ -13,7 +13,7 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./init-scripts:/docker-entrypoint-initdb.d
+      - ./backend/init-scripts:/docker-entrypoint-initdb.d
     networks:
       - tongpin-network
     restart: unless-stopped
@@ -67,7 +67,7 @@ services:
   # 用户服务 (User Service)
   user-service:
     build:
-      context: ./user-service
+      context: ./backend/user-service
       dockerfile: Dockerfile
     container_name: tongpin-user-service
     environment:
@@ -91,8 +91,8 @@ services:
       - tongpin-network
     restart: unless-stopped
     volumes:
-      - ./user-service/src:/app/src
-      - ./user-service/logs:/app/logs
+      - ./backend/user-service/src:/app/src
+      - ./backend/user-service/logs:/app/logs
       - /app/node_modules
     command: pnpm run dev
 
