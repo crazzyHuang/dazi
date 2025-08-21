@@ -9,7 +9,7 @@ RUN apk add --no-cache python3 make g++ curl
 # 安装pnpm
 RUN npm install -g pnpm
 # 安装 nodemon
-RUN pnpm add -D nodemon
+RUN npm install -g nodemon
 
 # 复制package文件
 COPY package*.json ./
