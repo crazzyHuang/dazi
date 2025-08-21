@@ -59,7 +59,17 @@ echo "✅ 用户服务已就绪"
 
 # 安装项目依赖（如果需要）
 echo "📦 安装项目依赖..."
-cd user-service && pnpm install && cd ..
+if [ -d "user-service" ]; then
+    cd user-service
+    if [ -f "pnpm-lock.yaml" ]; then
+        echo "🔒 使用锁定版本安装依赖..."
+        pnpm install --frozen-lockfile
+    else
+        echo "📦 安装项目依赖..."
+        pnpm install
+    fi
+    cd ..
+fi
 
 echo ""
 echo "🎉 所有服务启动成功！"

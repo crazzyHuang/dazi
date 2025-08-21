@@ -15,12 +15,11 @@ RUN npm install -g nodemon
 COPY package*.json ./
 
 # 安装依赖（包含开发依赖）
-# RUN if [ -f pnpm-lock.yaml ]; then \
-#       pnpm install --frozen-lockfile; \
-#     else \
-#       pnpm install; \
-#     fi
-RUN pnpm install; 
+RUN if [ -f pnpm-lock.yaml ]; then \
+  pnpm install --frozen-lockfile; \
+  else \
+  pnpm install; \
+  fi 
 
 # 复制源代码
 COPY . .
@@ -30,7 +29,7 @@ RUN mkdir -p logs
 
 # 创建非root用户
 RUN addgroup -g 1001 -S nodejs && \
-    adduser -S nextjs -u 1001
+  adduser -S nextjs -u 1001
 
 # 更改文件所有权
 RUN chown -R nextjs:nodejs /app
