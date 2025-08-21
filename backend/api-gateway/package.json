@@ -15,12 +15,12 @@
   "author": "TongPin DaZi Team",
   "license": "MIT",
   "dependencies": {
-    "express": "catalog:",
-    "cors": "catalog:",
-    "helmet": "catalog:",
-    "dotenv": "catalog:",
-    "winston": "catalog:",
-    "joi": "catalog:",
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "helmet": "^7.0.0",
+    "dotenv": "^16.3.1",
+    "winston": "^3.10.0",
+    "joi": "^17.9.2",
     "http-proxy-middleware": "^2.0.6",
     "rate-limit-redis": "^3.0.1"
   },
