@@ -13,7 +13,11 @@ RUN apk add --no-cache python3 make g++ curl
 COPY package*.json ./
 
 # 安装依赖（仅生产依赖）
-RUN pnpm install --prod --frozen-lockfile
+RUN if [ -f pnpm-lock.yaml ]; then \
+      pnpm install --prod --frozen-lockfile; \
+    else \
+      pnpm install --prod; \
+    fi
 
 # 复制源代码
 COPY . .
