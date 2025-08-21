@@ -415,16 +415,20 @@ manage_services() {
 
     case $OPERATION in
         "start")
-            echo "🚀 启动所有服务..."
+            print_section "🚀 启动所有服务"
+            # 先确保没有冲突的容器
+            docker-compose down 2>/dev/null || true
+            sleep 2
+
             docker-compose up -d postgres redis mongodb elasticsearch
-            echo "⏳ 等待数据库服务启动..."
+            print_info "等待数据库服务启动..."
             sleep 10
             check_database_connectivity
             docker-compose up -d --build user-service
-            echo "⏳ 等待用户服务启动..."
+            print_info "等待用户服务启动..."
             sleep 5
             check_service_health
-            echo "✅ 所有服务启动成功！"
+            print_success "✅ 所有服务启动成功！"
             ;;
         "stop")
             echo "🛑 停止所有服务..."
@@ -432,11 +436,11 @@ manage_services() {
             echo "✅ 所有服务已停止"
             ;;
         "restart")
-            echo "🔄 重启所有服务..."
+            print_section "🔄 重启所有服务"
             docker-compose restart postgres redis mongodb elasticsearch
-            echo "🔧 重建并重启用户服务..."
+            print_info "重建并重启用户服务..."
             docker-compose up -d --build user-service
-            echo "✅ 所有服务已重启"
+            print_success "✅ 所有服务已重启"
             ;;
         "status")
             echo "📊 服务状态："
@@ -493,8 +497,51 @@ if [[ -n "$OPERATION" ]]; then
     exit 0
 fi
 
+# 容器清理函数
+cleanup_existing_containers() {
+    print_section "🧹 检查并清理现有容器"
+
+    # 定义项目相关的容器名称
+    local containers=("tongpin-postgres" "tongpin-redis" "tongpin-mongodb" "tongpin-elasticsearch" "tongpin-user-service")
+
+    local found_containers=false
+
+    for container in "${containers[@]}"; do
+        if docker ps -a --format 'table {{.Names}}' | grep -q "^${container}$"; then
+            print_warn "发现现有容器: ${container}"
+            found_containers=true
+        fi
+    done
+
+    if $found_containers; then
+        print_warn "正在清理现有容器..."
+        docker-compose down -v 2>/dev/null || true
+
+        # 强制删除可能残留的容器
+        for container in "${containers[@]}"; do
+            if docker ps -a --format 'table {{.Names}}' | grep -q "^${container}$"; then
+                print_info "强制删除容器: ${container}"
+                docker rm -f "$container" 2>/dev/null || true
+            fi
+        done
+
+        # 清理相关镜像（可选）
+        print_info "清理未使用的镜像..."
+        docker image prune -f 2>/dev/null || true
+
+        print_success "容器清理完成"
+    else
+        print_success "未发现冲突的容器"
+    fi
+}
+
 print_header "🚀 开始部署到 ${ENVIRONMENT} 环境"
 print_info "项目目录: ${PROJECT_DIR}"
+
+# 如果不是更新模式，清理现有容器
+if [[ "${ENVIRONMENT}" != "update" ]]; then
+    cleanup_existing_containers
+fi
 
 # 如果是跳过安装模式，直接进入更新流程
 if [[ "${ENVIRONMENT}" == "update" ]]; then
@@ -502,6 +549,11 @@ if [[ "${ENVIRONMENT}" == "update" ]]; then
     print_info "项目目录: ${PROJECT_DIR}"
 
     cd ${PROJECT_DIR}
+
+    # 更新模式也需要清理可能存在的冲突容器
+    print_section "🧹 准备环境"
+    docker-compose down 2>/dev/null || true
+    print_success "环境清理完成"
 
     # 更新代码
     print_section "📥 更新项目代码"
@@ -586,9 +638,15 @@ if ! command -v docker-compose &> /dev/null; then
 fi
 
 # 创建项目目录
-echo "📁 创建项目目录..."
+print_section "📁 创建项目目录"
 mkdir -p ${PROJECT_DIR}
 cd ${PROJECT_DIR}
+
+# 确保没有冲突的容器
+print_section "🧹 最终环境清理"
+docker-compose down -v 2>/dev/null || true
+sleep 2
+print_success "环境清理完成"
 
 # 克隆或更新代码
 echo "📥 克隆项目代码..."
