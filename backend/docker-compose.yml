@@ -94,7 +94,7 @@ services:
       - ./user-service/src:/app/src
       - ./user-service/logs:/app/logs
       - /app/node_modules
-    command: npm run dev
+    command: pnpm run dev
 
   # 搭子服务 (Post Service) - 待开发
   # post-service:

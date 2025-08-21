@@ -1,13 +1,13 @@
 FROM node:18-alpine
 
-# 安装pnpm
-RUN npm install -g pnpm
-
 # 创建应用目录
 WORKDIR /app
 
 # 安装系统依赖
 RUN apk add --no-cache python3 make g++ curl
+
+# 安装pnpm
+RUN npm install -g pnpm
 
 # 复制package文件
 COPY package*.json ./
