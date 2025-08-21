@@ -79,7 +79,11 @@ if [[ "${ENVIRONMENT}" == "update" ]]; then
 
     # 重新安装依赖
     echo "📦 更新项目依赖..."
-    pnpm install --frozen-lockfile
+    if [[ -f "pnpm-lock.yaml" ]]; then
+        pnpm install --frozen-lockfile
+    else
+        pnpm install
+    fi
 
     # 重启所有服务
     echo "🔄 重启所有服务..."
@@ -169,7 +173,14 @@ cd backend
 
 # 安装项目依赖
 echo "📦 安装项目依赖..."
-pnpm install --frozen-lockfile
+if [[ -f "pnpm-lock.yaml" ]]; then
+    echo "🔒 检测到lockfile，使用锁定版本安装"
+    pnpm install --frozen-lockfile
+else
+    echo "📦 未检测到lockfile，执行全新安装"
+    pnpm install
+    echo "🔒 生成lockfile文件"
+fi
 
 # 配置环境变量
 echo "⚙️ 配置环境变量..."
