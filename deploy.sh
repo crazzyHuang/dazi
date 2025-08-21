@@ -29,27 +29,27 @@ case $MODE_CHOICE in
     1)
         ENVIRONMENT="development"
         PROJECT_NAME="dazi-dev"
-        PROJECT_DIR="/home/app/${PROJECT_NAME}"
+        PROJECT_DIR="/home/app/dazi/${PROJECT_NAME}"
         ;;
     2)
         ENVIRONMENT="staging"
         PROJECT_NAME="dazi-staging"
-        PROJECT_DIR="/home/app/${PROJECT_NAME}"
+        PROJECT_DIR="/home/app/dazi/${PROJECT_NAME}"
         ;;
     3)
         ENVIRONMENT="production"
         PROJECT_NAME="dazi-prod"
-        PROJECT_DIR="/home/app/${PROJECT_NAME}"
+        PROJECT_DIR="/home/app/dazi/${PROJECT_NAME}"
         ;;
     4)
         ENVIRONMENT="update"
         # 查找现有的项目目录
-        if [[ -d "/home/app/dazi-dev" ]]; then
-            PROJECT_DIR="/home/app/dazi-dev"
-        elif [[ -d "/home/app/dazi-staging" ]]; then
-            PROJECT_DIR="/home/app/dazi-staging"
-        elif [[ -d "/home/app/dazi-prod" ]]; then
-            PROJECT_DIR="/home/app/dazi-prod"
+        if [[ -d "/home/app/dazi/dazi-dev" ]]; then
+            PROJECT_DIR="/home/app/dazi/dazi-dev"
+        elif [[ -d "/home/app/dazi/dazi-staging" ]]; then
+            PROJECT_DIR="/home/app/dazi/dazi-staging"
+        elif [[ -d "/home/app/dazi/dazi-prod" ]]; then
+            PROJECT_DIR="/home/app/dazi/dazi-prod"
         else
             echo "❌ 未找到现有项目目录"
             exit 1
