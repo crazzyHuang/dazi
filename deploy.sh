@@ -1,11 +1,22 @@
 #!/bin/bash
 
-# 同频搭子项目云服务器一键部署脚本
-# 用法: ./deploy.sh
+# 同频搭子项目云服务器一键部署和运维脚本
+# 用法:
+#   ./deploy.sh                    # 交互式部署
+#   ./deploy.sh --deploy dev       # 部署开发环境
+#   ./deploy.sh --deploy staging   # 部署测试环境
+#   ./deploy.sh --deploy prod      # 部署生产环境
+#   ./deploy.sh --update           # 只更新代码和重启服务
+#   ./deploy.sh --start            # 启动所有服务
+#   ./deploy.sh --stop             # 停止所有服务
+#   ./deploy.sh --restart          # 重启所有服务
+#   ./deploy.sh --status           # 查看服务状态
+#   ./deploy.sh --logs             # 查看实时日志
+#   ./deploy.sh --clean            # 清理未使用的Docker资源
 
 set -e
 
-echo "🎯 同频搭子项目部署工具"
+echo "🎯 同频搭子项目部署和运维工具"
 echo "================================="
 
 # 检查是否为root用户
@@ -15,51 +26,264 @@ if [[ $EUID -ne 0 ]]; then
    exit 1
 fi
 
-# 交互式选择部署模式
-echo "请选择部署模式："
-echo "1) 开发环境 (development) - 适合开发调试"
-echo "2) 测试环境 (staging) - 适合功能测试"
-echo "3) 生产环境 (production) - 适合线上部署"
-echo "4) 跳过安装，只更新代码和重启服务"
-echo ""
+# 解析命令行参数
+if [[ $# -eq 0 ]]; then
+    # 交互式选择部署模式
+    echo "请选择部署模式："
+    echo "1) 开发环境 (development) - 适合开发调试"
+    echo "2) 测试环境 (staging) - 适合功能测试"
+    echo "3) 生产环境 (production) - 适合线上部署"
+    echo "4) 跳过安装，只更新代码和重启服务"
+    echo ""
 
-read -p "请输入选择 (1-4): " MODE_CHOICE
+    read -p "请输入选择 (1-4): " MODE_CHOICE
+else
+    case $1 in
+        --deploy)
+            case $2 in
+                dev|development)
+                    MODE_CHOICE=1
+                    ;;
+                staging|staging)
+                    MODE_CHOICE=2
+                    ;;
+                prod|production)
+                    MODE_CHOICE=3
+                    ;;
+                *)
+                    echo "❌ 无效的环境参数: $2"
+                    echo "💡 可用环境: dev, staging, prod"
+                    exit 1
+                    ;;
+            esac
+            ;;
+        --update)
+            MODE_CHOICE=4
+            ;;
+        --start)
+            MODE_CHOICE=5
+            ;;
+        --stop)
+            MODE_CHOICE=6
+            ;;
+        --restart)
+            MODE_CHOICE=7
+            ;;
+        --status)
+            MODE_CHOICE=8
+            ;;
+        --logs)
+            MODE_CHOICE=9
+            ;;
+        --clean)
+            MODE_CHOICE=10
+            ;;
+        --help|-h)
+            echo "同频搭子项目部署和运维工具"
+            echo "================================="
+            echo ""
+            echo "部署命令:"
+            echo "  $0                    # 交互式部署"
+            echo "  $0 --deploy dev       # 部署开发环境"
+            echo "  $0 --deploy staging   # 部署测试环境"
+            echo "  $0 --deploy prod      # 部署生产环境"
+            echo "  $0 --update           # 只更新代码和重启服务"
+            echo ""
+            echo "运维命令:"
+            echo "  $0 --start            # 启动所有服务"
+            echo "  $0 --stop             # 停止所有服务"
+            echo "  $0 --restart          # 重启所有服务"
+            echo "  $0 --status           # 查看服务状态"
+            echo "  $0 --logs             # 查看实时日志"
+            echo "  $0 --clean            # 清理Docker资源"
+            echo ""
+            echo "其他命令:"
+            echo "  $0 --help             # 显示此帮助信息"
+            echo ""
+            echo "示例:"
+            echo "  sudo ./deploy.sh --deploy dev    # 部署开发环境"
+            echo "  sudo ./deploy.sh --start         # 启动服务"
+            echo "  sudo ./deploy.sh --logs          # 查看日志"
+            exit 0
+            ;;
+        *)
+            echo "❌ 未知参数: $1"
+            echo "💡 使用 $0 --help 查看帮助"
+            exit 1
+            ;;
+    esac
+fi
 
 case $MODE_CHOICE in
-    1)
-        ENVIRONMENT="development"
-        PROJECT_NAME="dazi-dev"
-        PROJECT_DIR="/home/app/dazi/${PROJECT_NAME}"
-        ;;
-    2)
-        ENVIRONMENT="staging"
-        PROJECT_NAME="dazi-staging"
-        PROJECT_DIR="/home/app/dazi/${PROJECT_NAME}"
-        ;;
-    3)
-        ENVIRONMENT="production"
-        PROJECT_NAME="dazi-prod"
-        PROJECT_DIR="/home/app/dazi/${PROJECT_NAME}"
-        ;;
-    4)
-        ENVIRONMENT="update"
-        # 查找现有的项目目录
-        if [[ -d "/home/app/dazi/dazi-dev" ]]; then
-            PROJECT_DIR="/home/app/dazi/dazi-dev"
-        elif [[ -d "/home/app/dazi/dazi-staging" ]]; then
-            PROJECT_DIR="/home/app/dazi/dazi-staging"
-        elif [[ -d "/home/app/dazi/dazi-prod" ]]; then
-            PROJECT_DIR="/home/app/dazi/dazi-prod"
-        else
-            echo "❌ 未找到现有项目目录"
-            exit 1
-        fi
-        ;;
-    *)
-        echo "❌ 无效选择"
-        exit 1
-        ;;
+     1)
+         ENVIRONMENT="development"
+         PROJECT_NAME="dazi-dev"
+         PROJECT_DIR="/home/app/dazi/${PROJECT_NAME}"
+         ;;
+     2)
+         ENVIRONMENT="staging"
+         PROJECT_NAME="dazi-staging"
+         PROJECT_DIR="/home/app/dazi/${PROJECT_NAME}"
+         ;;
+     3)
+         ENVIRONMENT="production"
+         PROJECT_NAME="dazi-prod"
+         PROJECT_DIR="/home/app/dazi/${PROJECT_NAME}"
+         ;;
+     4)
+         ENVIRONMENT="update"
+         # 查找现有的项目目录
+         if [[ -d "/home/app/dazi/dazi-dev" ]]; then
+             PROJECT_DIR="/home/app/dazi/dazi-dev"
+         elif [[ -d "/home/app/dazi/dazi-staging" ]]; then
+             PROJECT_DIR="/home/app/dazi/dazi-staging"
+         elif [[ -d "/home/app/dazi/dazi-prod" ]]; then
+             PROJECT_DIR="/home/app/dazi/dazi-prod"
+         else
+             echo "❌ 未找到现有项目目录"
+             exit 1
+         fi
+         ;;
+     5)
+         OPERATION="start"
+         # 查找现有的项目目录
+         find_project_dir
+         ;;
+     6)
+         OPERATION="stop"
+         find_project_dir
+         ;;
+     7)
+         OPERATION="restart"
+         find_project_dir
+         ;;
+     8)
+         OPERATION="status"
+         find_project_dir
+         ;;
+     9)
+         OPERATION="logs"
+         find_project_dir
+         ;;
+     10)
+         OPERATION="clean"
+         ;;
+     *)
+         echo "❌ 无效选择"
+         exit 1
+         ;;
 esac
+
+# 查找项目目录的函数
+find_project_dir() {
+    if [[ -d "/home/app/dazi/dazi-dev" ]]; then
+        PROJECT_DIR="/home/app/dazi/dazi-dev"
+    elif [[ -d "/home/app/dazi/dazi-staging" ]]; then
+        PROJECT_DIR="/home/app/dazi/dazi-staging"
+    elif [[ -d "/home/app/dazi/dazi-prod" ]]; then
+        PROJECT_DIR="/home/app/dazi/dazi-prod"
+    else
+        echo "❌ 未找到现有项目目录"
+        exit 1
+    fi
+}
+
+# 检查Docker和Docker Compose
+check_docker_compose() {
+    if ! docker info > /dev/null 2>&1; then
+        echo "❌ Docker未运行，请先启动Docker"
+        exit 1
+    fi
+
+    if ! command -v docker-compose > /dev/null 2>&1; then
+        echo "❌ docker-compose未安装"
+        exit 1
+    fi
+}
+
+# 服务管理函数
+manage_services() {
+    cd ${PROJECT_DIR}/backend
+
+    case $OPERATION in
+        "start")
+            echo "🚀 启动所有服务..."
+            docker-compose up -d postgres redis mongodb elasticsearch
+            echo "⏳ 等待数据库服务启动..."
+            sleep 10
+            check_database_connectivity
+            docker-compose up -d --build user-service
+            echo "⏳ 等待用户服务启动..."
+            sleep 5
+            check_service_health
+            echo "✅ 所有服务启动成功！"
+            ;;
+        "stop")
+            echo "🛑 停止所有服务..."
+            docker-compose down
+            echo "✅ 所有服务已停止"
+            ;;
+        "restart")
+            echo "🔄 重启所有服务..."
+            docker-compose restart postgres redis mongodb elasticsearch
+            echo "🔧 重建并重启用户服务..."
+            docker-compose up -d --build user-service
+            echo "✅ 所有服务已重启"
+            ;;
+        "status")
+            echo "📊 服务状态："
+            docker-compose ps
+            ;;
+        "logs")
+            echo "📋 实时日志（按 Ctrl+C 退出）："
+            docker-compose logs -f
+            ;;
+        "clean")
+            echo "🧹 清理Docker资源..."
+            docker system prune -f
+            docker volume prune -f
+            docker image prune -f
+            echo "✅ Docker资源清理完成"
+            ;;
+    esac
+}
+
+# 检查数据库连接
+check_database_connectivity() {
+    echo "🔍 检查数据库连接..."
+
+    # 检查PostgreSQL
+    if docker-compose exec postgres pg_isready -h localhost -p 5432 > /dev/null 2>&1; then
+        echo "✅ PostgreSQL 已就绪"
+    else
+        echo "❌ PostgreSQL 连接失败"
+    fi
+
+    # 检查Redis
+    if docker-compose exec redis redis-cli ping > /dev/null 2>&1; then
+        echo "✅ Redis 已就绪"
+    else
+        echo "❌ Redis 连接失败"
+    fi
+}
+
+# 检查服务健康状态
+check_service_health() {
+    if curl -f http://localhost:3001/health > /dev/null 2>&1; then
+        echo "✅ 用户服务已就绪"
+    else
+        echo "❌ 用户服务启动失败"
+    fi
+}
+
+# 如果是运维操作模式
+if [[ -n "$OPERATION" ]]; then
+    echo "🔧 执行运维操作: ${OPERATION}"
+    echo "📁 项目目录: ${PROJECT_DIR}"
+    check_docker_compose
+    manage_services
+    exit 0
+fi
 
 echo "🚀 开始部署到 ${ENVIRONMENT} 环境"
 echo "📁 项目目录: ${PROJECT_DIR}"
@@ -243,7 +467,7 @@ fi
 
 # 启动用户服务
 echo "🚀 启动用户服务..."
-docker-compose up -d user-service
+docker-compose up -d --build user-service
 
 # 等待服务启动
 echo "⏳ 等待用户服务启动..."
@@ -271,7 +495,7 @@ Requires=docker.service
 Type=simple
 User=root
 WorkingDirectory=${PROJECT_DIR}
-ExecStart=${PROJECT_DIR}/backend/start-services.sh
+ExecStart=${PROJECT_DIR}/deploy.sh --start
 Restart=always
 RestartSec=10
 StandardOutput=journal
@@ -318,7 +542,12 @@ if [[ "${ENVIRONMENT}" == "production" ]]; then
 fi
 
 echo "📝 常用操作："
-echo "   重新部署: sudo ./deploy.sh"
-echo "   只更新代码: sudo ./deploy.sh (选择选项4)"
+echo "   重新部署:           sudo ./deploy.sh --deploy dev"
+echo "   只更新代码:         sudo ./deploy.sh --update"
+echo "   启动服务:           sudo ./deploy.sh --start"
+echo "   停止服务:           sudo ./deploy.sh --stop"
+echo "   查看状态:           sudo ./deploy.sh --status"
+echo "   查看日志:           sudo ./deploy.sh --logs"
+echo "   清理Docker资源:     sudo ./deploy.sh --clean"
 echo ""
 echo "🎯 现在你可以开始开发和测试了！"
