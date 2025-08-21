@@ -7,34 +7,20 @@ WORKDIR /app
 RUN apk add --no-cache python3 make g++ curl
 
 # 安装pnpm和nodemon
-RUN npm install -g pnpm nodemon
+RUN npm install -g pnpm nodemon 
 
 # 创建非root用户
 RUN addgroup -g 1001 -S nodejs && \
-  adduser -S nextjs -u 1001
+    adduser -S nextjs -u 1001
 
-# 复制 workspace 根目录的配置文件
-COPY --chown=nextjs:nodejs pnpm-workspace.yaml ./
-COPY --chown=nextjs:nodejs package.json ./
-COPY --chown=nextjs:nodejs pnpm-lock.yaml ./
+# 复制package文件，并指定用户权限
+COPY --chown=nextjs:nodejs package*.json pnpm-lock.yaml* ./
 
-# 复制所有服务的 package.json 文件（workspace 需要）
-COPY --chown=nextjs:nodejs user-service/package.json ./user-service/
-COPY --chown=nextjs:nodejs post-service/package.json ./post-service/
-COPY --chown=nextjs:nodejs chat-service/package.json ./chat-service/
-COPY --chown=nextjs:nodejs soul-service/package.json ./soul-service/
-COPY --chown=nextjs:nodejs recommend-service/package.json ./recommend-service/
-COPY --chown=nextjs:nodejs api-gateway/package.json ./api-gateway/
+# 安装依赖（包含开发依赖）
+RUN pnpm install 
 
-# 安装所有workspace依赖
-RUN pnpm install --frozen-lockfile
-
-# 复制当前服务的源代码
-COPY --chown=nextjs:nodejs user-service/src ./user-service/src
-COPY --chown=nextjs:nodejs user-service/tsconfig.json ./user-service/
-
-# 设置工作目录为当前服务
-WORKDIR /app/user-service
+# 复制源代码（同时保证文件权限属于 nextjs）
+COPY --chown=nextjs:nodejs . .
 
 # 创建日志目录
 RUN mkdir -p logs
@@ -49,5 +35,5 @@ EXPOSE 3001
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD curl -f http://localhost:3001/health || exit 1
 
-# 启动命令 - 使用workspace命令
+# 启动命令
 CMD ["pnpm", "dev"]
