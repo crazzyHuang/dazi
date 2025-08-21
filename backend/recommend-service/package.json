@@ -1,0 +1,50 @@
+{
+  "name": "recommend-service",
+  "version": "1.0.0",
+  "description": "Recommendation service for TongPin DaZi social platform",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "nodemon src/index.ts",
+    "start": "node dist/index.js",
+    "test": "jest",
+    "lint": "eslint src/**/*.ts",
+    "format": "prettier --write src/**/*.ts"
+  },
+  "keywords": ["microservice", "recommendation", "social"],
+  "author": "TongPin DaZi Team",
+  "license": "MIT",
+  "dependencies": {
+    "express": "catalog:",
+    "pg": "catalog:",
+    "redis": "catalog:",
+    "jsonwebtoken": "catalog:",
+    "cors": "catalog:",
+    "helmet": "catalog:",
+    "dotenv": "catalog:",
+    "winston": "catalog:",
+    "joi": "catalog:",
+    "uuid": "catalog:",
+    "python-shell": "^5.0.0"
+  },
+  "devDependencies": {
+    "@types/express": "catalog:",
+    "@types/pg": "catalog:",
+    "@types/redis": "catalog:",
+    "@types/jsonwebtoken": "catalog:",
+    "@types/cors": "catalog:",
+    "@types/uuid": "catalog:",
+    "@types/jest": "catalog:",
+    "@types/node": "catalog:",
+    "@types/supertest": "catalog:",
+    "typescript": "catalog:",
+    "nodemon": "catalog:",
+    "ts-node": "catalog:",
+    "jest": "catalog:",
+    "supertest": "catalog:",
+    "eslint": "catalog:",
+    "prettier": "catalog:",
+    "@typescript-eslint/eslint-plugin": "catalog:",
+    "@typescript-eslint/parser": "catalog:"
+  }
+}
