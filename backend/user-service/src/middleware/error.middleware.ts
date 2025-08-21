@@ -7,11 +7,11 @@ export interface AppError extends Error {
 }
 
 export const errorHandler = (
-  error: AppError,
-  req: Request,
-  res: Response,
-  next: NextFunction
-): void => {
+   error: AppError,
+   req: Request,
+   res: Response,
+   _next: NextFunction
+ ): void => {
   let statusCode = error.statusCode || 500;
   let message = error.message || 'Internal Server Error';
 
@@ -72,7 +72,7 @@ export const errorHandler = (
 };
 
 // 404 handler
-export const notFound = (req: Request, res: Response, next: NextFunction): void => {
+export const notFound = (req: Request, _res: Response, next: NextFunction): void => {
   const error: AppError = new Error(`Not found - ${req.originalUrl}`);
   error.statusCode = 404;
   next(error);

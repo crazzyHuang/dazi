@@ -53,8 +53,11 @@ export const connectDatabase = async (): Promise<void> => {
     logger.info('✅ Redis connected successfully');
 
   } catch (error) {
-    logger.error('❌ Database connection failed:', error);
-    throw error;
+    logger.warn('⚠️ Database connection failed, but continuing in development mode:', error);
+    // Don't throw error in development to allow the server to start
+    if (process.env.NODE_ENV === 'production') {
+      throw error;
+    }
   }
 };
 

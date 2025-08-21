@@ -12,14 +12,10 @@ RUN npm install -g pnpm
 RUN npm install -g nodemon
 
 # 复制package文件
-COPY package*.json ./
+COPY package*.json pnpm-lock.yaml* ./
 
 # 安装依赖（包含开发依赖）
-RUN if [ -f pnpm-lock.yaml ]; then \
-      pnpm install --frozen-lockfile; \
-    else \
-      pnpm install; \
-    fi
+RUN pnpm install --frozen-lockfile
 
 # 复制源代码
 COPY . .
