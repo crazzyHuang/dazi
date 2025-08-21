@@ -15,7 +15,7 @@ const pgPool = new Pool({
 });
 
 // Redis client
-const redisClient = createClient({
+const redisClient: ReturnType<typeof createClient> = createClient({
   url: process.env.REDIS_URL || 'redis://localhost:6379'
 });
 
